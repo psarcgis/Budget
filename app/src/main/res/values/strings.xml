@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Budget</string>
+    <string name="earned">Earned -\u0020</string>
+    <string name="projected">Projected -\u0020</string>
+</resources>
