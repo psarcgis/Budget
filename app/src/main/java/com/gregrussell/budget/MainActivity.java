@@ -32,6 +32,13 @@ public class MainActivity extends Activity {
     DataBaseHelperCategory myDBHelper;
     public static int CURRENT_BUDGET;
     public static final String EXTRA_MESSAGE_TO_DISPLAY_CATEGORY = "com.gregrussell.budget.EXTRA_INTENT_TO_DISPLAY_CATEGORY";
+    View container;
+    TextView difference;
+    TextView overUnder;
+    TextView budgetName;
+    TextView projectedExpenses;
+    TextView spent;
+    ListView listView;
 
 
     @Override
@@ -42,8 +49,15 @@ public class MainActivity extends Activity {
 
 
 
-
-        //Formula to convert hexColor to
+        //initializing views
+        container = findViewById(R.id.container);
+        difference = (TextView)container.findViewById(R.id.difference);
+        overUnder = (TextView)container.findViewById(R.id.overUnder);
+        budgetName = (TextView)container.findViewById(R.id.budgetName);
+        projectedExpenses = (TextView)container.findViewById(R.id.projectedValue);
+        spent = (TextView)container.findViewById(R.id.spentValue);
+        View frame = (View)findViewById(R.id.listViewFrame);
+        listView = frame.findViewById(R.id.listView);
 
 
 
@@ -221,19 +235,49 @@ public class MainActivity extends Activity {
     }
 
 
-    private class AsyncLoadHeader extends AsyncTask<Void,Void,Boolean>{
+    private class AsyncLoadHeader extends AsyncTask<Void,Void,String[]>{
+
+        double diff;
+        double allExp;
+
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected String[] doInBackground(Void... params) {
 
-            PopulateHeader();
-            return null;
+            return PopulateHeader();
         }
 
 
 
         @Override
-        protected void onPostExecute(Boolean result){
+        protected void onPostExecute(String[] result){
+
+            //set text from string[] result that is returned by doInBackground
+
+            String ovUn;
+
+            if(diff < allExp){
+                ovUn = "Under";
+                container.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+            }else if(diff == allExp){
+                ovUn = "Even";
+                container.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+            }else {
+                ovUn = "Over";
+                container.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+            }
+
+
+            //set text of textViews
+            budgetName.setText(result[0]);
+            projectedExpenses.setText(result[1]);
+            spent.setText(result[2]);
+            difference.setText(result[3]);
+            overUnder.setText(ovUn);
+
+
+
+
             //progress bar is visible by default. Turn invisible once loading is complete
             View headerLoadingPanel = findViewById(R.id.headerLoadingPanel);
             headerLoadingPanel.setVisibility(View.INVISIBLE);
@@ -242,7 +286,7 @@ public class MainActivity extends Activity {
         }
 
 
-        private void PopulateHeader(){
+        private String[] PopulateHeader(){
 
             Log.d("listDataObj", "Entered PopulateHeader, current budget is " + CURRENT_BUDGET);
 
@@ -292,20 +336,13 @@ public class MainActivity extends Activity {
 
             //pass data from list to objects
             String budName = listData.getBudgetName();
-            double allExp = listData.getAllExpenses();
+            allExp = listData.getAllExpenses();
             double totSpent = listData.getTotalSpent();
-            double diff = allExp - totSpent;
+            diff = allExp - totSpent;
 
 
 
-            //objects that correspond to views in layout
 
-            View container = (View) findViewById(R.id.container);
-            TextView difference = (TextView)container.findViewById(R.id.difference);
-            TextView overUnder = (TextView)container.findViewById(R.id.overUnder);
-            TextView budgetName = (TextView)container.findViewById(R.id.budgetName);
-            TextView projectedExpenses = (TextView)container.findViewById(R.id.projectedValue);
-            TextView spent = (TextView)container.findViewById(R.id.spentValue);
 
 
             //formatter to convert double under 1000 to currency (only for difference text view)
@@ -320,7 +357,8 @@ public class MainActivity extends Activity {
             String fmtAllExp = fmt.format(allExp);
             String fmtTotSpent = fmt.format(totSpent);
             String fmtDiff;
-            String ovUn;
+
+
 
             //create shortened format of difference
             if(diff < 1000){
@@ -336,24 +374,11 @@ public class MainActivity extends Activity {
                 fmtDiff = highFmt.format(diff) + "B";
             }
 
-            if(diff < allExp){
-                ovUn = "Under";
-                container.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
-            }else if(diff == allExp){
-                ovUn = "Even";
-                container.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-            }else {
-                ovUn = "Over";
-                container.setBackgroundColor(getResources().getColor(R.color.colorListRed));
-            }
 
 
-            //set text of textViews
-            budgetName.setText(budName);
-            projectedExpenses.setText(fmtAllExp);
-            spent.setText(fmtTotSpent);
-            difference.setText(fmtDiff);
-            overUnder.setText(ovUn);
+            //String Array to return
+            String[] results = {budName,fmtAllExp,fmtTotSpent,fmtDiff};
+            return results;
 
 
 
@@ -385,11 +410,16 @@ public class MainActivity extends Activity {
             View listLoadingPanel = findViewById(R.id.listLoadingPanel);
             listLoadingPanel.setVisibility(View.INVISIBLE);
 
+            Log.d("listView", "listViewAdapter set");
+
+
+
             //set listener for list item click
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
+                    Log.d("onClick", "click " + String.valueOf(position));
                     //use position to get the category from listData
                     int category = listData.getCategoryIDList().get(position);
 
@@ -401,6 +431,7 @@ public class MainActivity extends Activity {
                         //an expense category has been selected
                         Intent intent = new Intent(MainActivity.this, DisplayCategory.class);
                         intent.putExtra(EXTRA_MESSAGE_TO_DISPLAY_CATEGORY, category);
+                        startActivity(intent);
                     }
 
 
@@ -409,11 +440,12 @@ public class MainActivity extends Activity {
 
 
 
+
         }
 
         private void PopulateList(){
 
-            Log.d("listViewAdapter", "PopulateList method is running");
+            Log.d("listViewAdapter", "PopulateList method is running yay");
 
             myDBHelper = new DataBaseHelperCategory(MainActivity.this);
 
@@ -436,12 +468,13 @@ public class MainActivity extends Activity {
 
             listData = myDBHelper.createListData(CURRENT_BUDGET);
             myDBHelper.close();
-            View view = findViewById(R.id.listViewFrame);
-            listView = (ListView)view.findViewById(R.id.listView);
 
 
+
+            //set listview adapter
             adapter = new ListViewAdapter(MainActivity.this,listData);
             listView.setAdapter(adapter);
+
 
 
         }

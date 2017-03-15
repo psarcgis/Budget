@@ -640,7 +640,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         if(cursor.moveToFirst()){
             projectedExpense = cursor.getDouble(Constants.EXPENSES_ESTIMATED_EXPENSE_POSITION);
-        }else projectedExpense = Double.NaN;
+        }else projectedExpense = 0.0;
 
 
         return projectedExpense;
@@ -658,7 +658,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         if(cursor.moveToFirst()){
             spentAmount = cursor.getDouble(Constants.SPENDING_SPENT_POSITION);
-        }else spentAmount = Double.NaN;
+        }else spentAmount = 0.0;
 
         return spentAmount;
 
