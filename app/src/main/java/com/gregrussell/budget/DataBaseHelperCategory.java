@@ -657,12 +657,29 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         " AND " + Spending.SPENDING_CATEGORY_ID + " = " + categoryID,null);
 
         if(cursor.moveToFirst()){
-            spentAmount = cursor.getDouble(Constants.SPENDING_SPENT_POSITION);
+            spentAmount = cursor.getDouble(0);
         }else spentAmount = 0.0;
 
         return spentAmount;
 
     }
+
+    //returns category name when given categoryID
+    public String getCategory(int categoryID){
+
+        String category;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
+        Categories._ID + " = " + categoryID, null);
+
+        if(cursor.moveToFirst()){
+            category = cursor.getString(Constants.CATEGORIES_NAME_POSITION);
+        }else category = "";
+        return category;
+    }
+
+
 
 
 

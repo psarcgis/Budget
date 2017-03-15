@@ -23,6 +23,7 @@ public class DisplayCategory extends Activity{
     TextView projected;
     TextView actual;
     ListView list;
+    TextView categoryTextView;
     DataBaseHelperCategory myDBHelper;
     int categoryID;
 
@@ -37,10 +38,62 @@ public class DisplayCategory extends Activity{
         categoryID = intent.getIntExtra(MainActivity.EXTRA_MESSAGE_TO_DISPLAY_CATEGORY,-1);
         projected = (TextView)findViewById(R.id.projected);
         actual = (TextView)findViewById(R.id.actual);
+        categoryTextView = (TextView)findViewById(R.id.category);
+
+        //load category and projected and actual expenses
+        AsyncLoadCategoryName loadCategory = new AsyncLoadCategoryName();
+        loadCategory.execute();
+
+        AsyncLoadProjectedAndActual loadProjAndActual = new AsyncLoadProjectedAndActual();
+        loadProjAndActual.execute();
 
 
 
     }
+
+    private class AsyncLoadCategoryName extends AsyncTask<Void,Void,String>{
+
+        @Override
+        protected String doInBackground(Void... params){
+
+            return GetCategory();
+
+        }
+
+        @Override
+        protected void onPostExecute(String category){
+            categoryTextView.setText(category);
+        }
+    }
+
+    private String GetCategory(){
+
+        myDBHelper = new DataBaseHelperCategory(DisplayCategory.this);
+
+        try {
+            myDBHelper.createDataBase();
+        } catch (IOException ioe) {
+            throw new Error("Unable to create database");
+
+        }
+
+        try {
+
+            myDBHelper.openDataBase();
+
+        } catch (SQLException sqle) {
+
+            throw sqle;
+
+        }
+
+        //use myDBHelper to get projected expense and return value
+        String category = myDBHelper.getCategory(categoryID);
+        myDBHelper.close();
+
+        return category;
+    }
+
 
 
 

@@ -56,8 +56,8 @@ public class MainActivity extends Activity {
         budgetName = (TextView)container.findViewById(R.id.budgetName);
         projectedExpenses = (TextView)container.findViewById(R.id.projectedValue);
         spent = (TextView)container.findViewById(R.id.spentValue);
-        View frame = (View)findViewById(R.id.listViewFrame);
-        //listView = frame.findViewById(R.id.listView);
+
+
 
 
 
@@ -472,6 +472,8 @@ public class MainActivity extends Activity {
 
 
             //set listview adapter
+            View view = findViewById(R.id.listViewFrame);
+            listView = (ListView)view.findViewById(R.id.listView);
             adapter = new ListViewAdapter(MainActivity.this,listData);
             listView.setAdapter(adapter);
 
