@@ -36,6 +36,8 @@ public class DisplayCategory extends Activity{
         //get the category ID from the extra on the intent
         Intent intent = getIntent();
         categoryID = intent.getIntExtra(MainActivity.EXTRA_MESSAGE_TO_DISPLAY_CATEGORY,-1);
+
+        //initializing views
         projected = (TextView)findViewById(R.id.projected);
         actual = (TextView)findViewById(R.id.actual);
         categoryTextView = (TextView)findViewById(R.id.category);
