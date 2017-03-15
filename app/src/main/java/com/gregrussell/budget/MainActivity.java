@@ -57,7 +57,7 @@ public class MainActivity extends Activity {
         projectedExpenses = (TextView)container.findViewById(R.id.projectedValue);
         spent = (TextView)container.findViewById(R.id.spentValue);
         View frame = (View)findViewById(R.id.listViewFrame);
-        listView = frame.findViewById(R.id.listView);
+        //listView = frame.findViewById(R.id.listView);
 
 
 
