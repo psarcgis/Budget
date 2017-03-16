@@ -716,6 +716,36 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
     }
 
+    //accepts budgetID and returns a list of all earnings for the budget
+    public List<EarningObj> getEarningsList(int budgetID){
+
+        List<EarningObj> earningObjList = new ArrayList<EarningObj>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Earning.EARNING_TABLE_NAME + " WHERE " +
+        Earning.EARNING_BUDGET_ID + " = " + budgetID + " ORDER BY " + Earning.EARNING_DATE + " DESC", null);
+
+        if(cursor.moveToFirst()){
+
+            EarningObj earned = new EarningObj();
+            earned.setID(cursor.getInt(Constants.EARNING_ID_POSITION));
+            earned.setTimestamp(Timestamp.valueOf(cursor.getString(Constants.EARNING_TIMESTAMP_POSITION)));
+            Date date = new Date(cursor.getLong(Constants.EARNING_DATE_POSITION));
+            earned.setDate(date);
+            earned.setBudgetID(cursor.getInt(Constants.EARNING_BUDGET_ID_POSITION));
+            earned.setBudgetName(cursor.getString(Constants.EARNING_BUDGET_NAME_POSITION));
+            earned.setEarned(cursor.getDouble(Constants.EARNING_EARNED_POSITION));
+            earned.setDescription(cursor.getString(Constants.EARNING_DESCRIPTION_POSITION));
+
+            earningObjList.add(earned);
+
+        }
+
+        return earningObjList;
+
+    }
+
+
+
 
 
 
