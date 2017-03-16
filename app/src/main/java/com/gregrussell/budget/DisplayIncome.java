@@ -6,6 +6,10 @@ import android.database.SQLException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -37,6 +41,13 @@ public class DisplayIncome extends Activity {
         //initializing views
         projected = (TextView)findViewById(R.id.projectedDisplayIncome);
         actual = (TextView)findViewById(R.id.actualDisplayIncome);
+        ImageView backButton = (ImageView) findViewById(R.id.backButtonDisplayIncome);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
 
         AsyncLoadProjectedAndActual loadProjAndActual = new AsyncLoadProjectedAndActual();

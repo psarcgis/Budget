@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.database.SQLException;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -38,9 +40,16 @@ public class DisplayCategory extends Activity{
         categoryID = intent.getIntExtra(MainActivity.EXTRA_MESSAGE_TO_DISPLAY_CATEGORY,-1);
 
         //initializing views
-        projected = (TextView)findViewById(R.id.projected);
-        actual = (TextView)findViewById(R.id.actual);
-        categoryTextView = (TextView)findViewById(R.id.category);
+        projected = (TextView)findViewById(R.id.projectedDisplayCategory);
+        actual = (TextView)findViewById(R.id.actualDisplayCategory);
+        categoryTextView = (TextView)findViewById(R.id.categoryDisplayCategory);
+        ImageView backButton = (ImageView) findViewById(R.id.backButtonDisplayCategory);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         //load category and projected and actual expenses
         AsyncLoadCategoryName loadCategory = new AsyncLoadCategoryName();
