@@ -29,10 +29,11 @@ public class Constants {
 
     public static final int EARNING_ID_POSITION = 0;
     public static final int EARNING_TIMESTAMP_POSITION = 1;
-    public static final int EARNING_BUDGET_ID_POSITION  = 2;
-    public static final int EARNING_BUDGET_NAME_POSITION = 3;
-    public static final int EARNING_SPENT_POSITION = 4;
-    public static final int EARNING_DESCRIPTION_POSITION = 5;
+    public static final int EARNING_DATE_POSITION = 2;
+    public static final int EARNING_BUDGET_ID_POSITION  = 3;
+    public static final int EARNING_BUDGET_NAME_POSITION = 4;
+    public static final int EARNING_EARNED_POSITION = 5;
+    public static final int EARNING_DESCRIPTION_POSITION = 6;
 
     public static final int EXPENSES_ID_POSITION = 0;
     public static final int EXPENSES_BUDGET_ID_POSITION  = 1;
