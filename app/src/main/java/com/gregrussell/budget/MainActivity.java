@@ -415,7 +415,6 @@ public class MainActivity extends Activity {
             listView.setAdapter(adapter);
 
 
-
             //set listener for list item click
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
