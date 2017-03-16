@@ -681,6 +681,43 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
 
 
+    //method to return the projected income for a given budget
+    public Double getProjectedIncome(int budgetID){
+
+
+        double projectedExpense;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Income.INCOME_TABLE_NAME + " WHERE " +
+                Income.INCOME_BUDGET_ID + " = " + budgetID, null);
+
+        if(cursor.moveToFirst()){
+            projectedExpense = cursor.getDouble(Constants.INCOME_ESTIMATE_POSITION);
+        }else projectedExpense = 0.0;
+
+
+        return projectedExpense;
+    }
+
+    //method to return the total amount earned for a given budget
+    public Double getEarnedAmount(int budgetID){
+
+
+        double spentAmount;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT SUM (" + Earning.EARNING_EARNED + ") FROM " +
+                Earning.EARNING_TABLE_NAME + " WHERE " + Earning.EARNING_BUDGET_ID + " = " + budgetID,null);
+
+        if(cursor.moveToFirst()){
+            spentAmount = cursor.getDouble(0);
+        }else spentAmount = 0.0;
+
+        return spentAmount;
+
+    }
+
+
+
 
 
 

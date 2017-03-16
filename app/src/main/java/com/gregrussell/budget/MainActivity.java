@@ -426,6 +426,8 @@ public class MainActivity extends Activity {
                     //must check if first position, income category handled differently
                     if(position == 0){
                         //income category has been selected
+                        Intent intent = new Intent(MainActivity.this, DisplayIncome.class);
+                        startActivity(intent);
 
                     }else{
                         //an expense category has been selected

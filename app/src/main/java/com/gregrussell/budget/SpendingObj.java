@@ -7,6 +7,8 @@ import java.util.Date;
  * Created by greg on 3/9/2017.
  */
 
+//class that creates an object that holds each item in a row from the Spending table
+
 public class SpendingObj {
 
 
