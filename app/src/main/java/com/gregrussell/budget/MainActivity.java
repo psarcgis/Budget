@@ -412,6 +412,8 @@ public class MainActivity extends Activity {
 
             Log.d("listView", "listViewAdapter set");
 
+            listView.setAdapter(adapter);
+
 
 
             //set listener for list item click
@@ -477,7 +479,7 @@ public class MainActivity extends Activity {
             View view = findViewById(R.id.listViewFrame);
             listView = (ListView)view.findViewById(R.id.listView);
             adapter = new ListViewAdapter(MainActivity.this,listData);
-            listView.setAdapter(adapter);
+
 
 
 
