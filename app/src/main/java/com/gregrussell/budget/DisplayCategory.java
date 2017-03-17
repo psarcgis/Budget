@@ -55,6 +55,7 @@ public class DisplayCategory extends Activity{
             public void onClick(View v) {
                 Log.d("displaycategory", "clicked edit; category id is " + categoryID + "; budget id is " + MainActivity.CURRENT_BUDGET);
                 AsyncEditProjectedExpenses task = new AsyncEditProjectedExpenses();
+                //execute will receive value from user input
                 task.execute("19500.59");
             }
         });
