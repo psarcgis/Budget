@@ -628,10 +628,10 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
     }
 
     //method to return the projected expenses for a category in a budget
-    public Double getProjectedExpenseForCategory(int categoryID, int budgetID){
+    public ExpenseObj getProjectedExpenseForCategory(int categoryID, int budgetID){
 
 
-        double projectedExpense;
+        ExpenseObj projectedExpense = new ExpenseObj();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + Expenses.EXPENSES_TABLE_NAME + " WHERE " +
@@ -639,8 +639,14 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         " = " + categoryID, null);
 
         if(cursor.moveToFirst()){
-            projectedExpense = cursor.getDouble(Constants.EXPENSES_ESTIMATED_EXPENSE_POSITION);
-        }else projectedExpense = 0.0;
+            projectedExpense.setID(cursor.getInt(Constants.EXPENSES_ID_POSITION));
+            projectedExpense.setBudgetID(cursor.getInt(Constants.EXPENSES_BUDGET_ID_POSITION));
+            projectedExpense.setBudgetName(cursor.getString(Constants.EXPENSES_BUDGET_NAME_POSITION));
+            projectedExpense.setCategoryID(cursor.getInt(Constants.EXPENSES_CATEGORY_ID_POSITION));
+            projectedExpense.setCategoryName(cursor.getString(Constants.EXPENSES_CATEGORY_NAME_POSITION));
+            projectedExpense.setSpent(cursor.getDouble(Constants.EXPENSES_ESTIMATED_EXPENSE_POSITION));
+
+        }else projectedExpense = null;
 
 
         return projectedExpense;
@@ -743,6 +749,49 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         return earningObjList;
 
     }
+
+
+    //accepts a list of category IDs and returns a list of category objects
+    public List<CategoryObj> getCategories(List<Integer> categoryIDList) {
+
+        List<CategoryObj> categoryObjList = new ArrayList<CategoryObj>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor;
+
+        for (int i = 0; i < categoryIDList.size(); i++) {
+
+            cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
+                    Categories._ID + " = " + categoryIDList.get(i), null);
+            if (cursor.moveToFirst()) {
+                CategoryObj category = new CategoryObj();
+                category.setID(cursor.getInt(Constants.CATEGORIES_ID_POSITION));
+                category.setCategoryName(cursor.getString(Constants.CATEGORIES_NAME_POSITION));
+                category.setDefaultCategory(cursor.getInt(Constants.CATEGORIES_DEFAULT_POSITION));
+
+                categoryObjList.add(category);
+            }
+        }
+
+        return categoryObjList;
+    }
+
+    //accepts the expense object and updates the table with the new amount spent
+    public int updateExpense(ExpenseObj expenseObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        //values that are to be updated
+        values.put(Expenses.EXPENSES_ESTIMATE, expenseObj.getSpent());
+
+        //updating row
+        return db.update(Expenses.EXPENSES_TABLE_NAME, values, Expenses._ID + " = " + expenseObj.getID(), null);
+
+
+    }
+
+
 
 
 

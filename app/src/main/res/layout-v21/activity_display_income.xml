@@ -60,20 +60,45 @@
             android:orientation="vertical"
             >
 
-            <TextView
-                android:id="@+id/projectedDisplayIncome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                android:layout_weight="1">
 
-            <TextView
-                android:id="@+id/actualDisplayIncome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/editProjectedDisplayIncome"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:clickable="true"
+                        android:src="@drawable/edit_icon"
+                        android:background="?android:attr/selectableItemBackgroundBorderless"/>
+
+                    <TextView
+                        android:id="@+id/projectedDisplayIncome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/actualDisplayIncome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
 
             <ListView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"></ListView>
+                android:layout_weight="2"></ListView>
 
 
 

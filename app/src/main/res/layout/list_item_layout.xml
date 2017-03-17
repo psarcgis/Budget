@@ -19,7 +19,7 @@
 
         <!-- Container for Right Side of layout-->
         <RelativeLayout
-            android:id="@+id/rightSideLayout"
+            android:id="@+id/rightSideLayoutItemLayout"
             android:layout_alignParentEnd="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,13 +32,13 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/difference"
+                    android:id="@+id/differenceItemLayout"
                     android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="+$100.00"/>
                 <TextView
-                    android:id="@+id/overUnder"
+                    android:id="@+id/overUnderItemLayout"
                     android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -59,7 +59,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/categoryName"
+                android:id="@+id/categoryNameItemLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
@@ -71,12 +71,12 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
                 <TextView
-                    android:id="@+id/projected"
+                    android:id="@+id/projectedItemLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Projected - "/>
                 <TextView
-                    android:id="@+id/projectedValue"
+                    android:id="@+id/projectedValueItemLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="$2600"/>
@@ -87,12 +87,12 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
                 <TextView
-                    android:id="@+id/spent"
+                    android:id="@+id/spentItemLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Earned - "/>
                 <TextView
-                    android:id="@+id/spentValue"
+                    android:id="@+id/spentValueItemLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="$2700"/>

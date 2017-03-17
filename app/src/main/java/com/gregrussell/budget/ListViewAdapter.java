@@ -69,12 +69,12 @@ public class ListViewAdapter extends BaseAdapter{
 
 
 
-        TextView difference = (TextView)currentView.findViewById(R.id.difference);
-        TextView overUnder = (TextView)currentView.findViewById(R.id.overUnder);
-        TextView categoryName = (TextView)currentView.findViewById(R.id.categoryName);
-        TextView expenses = (TextView)currentView.findViewById(R.id.projectedValue);
-        TextView spent = (TextView)currentView.findViewById(R.id.spentValue);
-        TextView spentOrEarned = (TextView)currentView.findViewById(R.id.spent);
+        TextView difference = (TextView)currentView.findViewById(R.id.differenceItemLayout);
+        TextView overUnder = (TextView)currentView.findViewById(R.id.overUnderItemLayout);
+        TextView categoryName = (TextView)currentView.findViewById(R.id.categoryNameItemLayout);
+        TextView expenses = (TextView)currentView.findViewById(R.id.projectedValueItemLayout);
+        TextView spent = (TextView)currentView.findViewById(R.id.spentValueItemLayout);
+        TextView spentOrEarned = (TextView)currentView.findViewById(R.id.spentItemLayout);
 
         //make spent text view read "earned" for income field, otherwise read "spent"
         if(position==0){
@@ -108,12 +108,12 @@ public class ListViewAdapter extends BaseAdapter{
         String ovUn;
 
         //create shortened format of difference
-        if(diff < 1000){
+        if(Math.abs(diff) < 1000){
             fmtDiff = lowFmt.format(diff);
-        }else if(diff >= 1000 && diff < 1000000 ){
+        }else if(Math.abs(diff) >= 1000 && Math.abs(diff) < 1000000 ){
             diff = diff / 1000;
             fmtDiff = highFmt.format(diff) + "K";
-        }else if (diff >= 1000000 && diff < 1000000000){
+        }else if (Math.abs(diff) >= 1000000 && Math.abs(diff) < 1000000000){
             diff = diff / 1000000;
             fmtDiff = highFmt.format(diff) + "M";
         }else{
@@ -121,8 +121,8 @@ public class ListViewAdapter extends BaseAdapter{
             fmtDiff = highFmt.format(diff) + "B";
         }
 
-
-        if(diff < exp){
+        Log.d("listviewadapter","diff is " + diff + "exp is " + exp);
+        if(totSpent < exp){
             ovUn = "Under";
             if(position == 0){
                 difference.setTextColor(context.getResources().getColor(R.color.colorListRed));
@@ -132,7 +132,7 @@ public class ListViewAdapter extends BaseAdapter{
                 overUnder.setTextColor(context.getResources().getColor(R.color.colorListGreen));
             }
 
-        }else if(diff == exp){
+        }else if(totSpent == exp){
             ovUn = "Even";
             difference.setTextColor(context.getResources().getColor(R.color.colorPrimary));
             overUnder.setTextColor(context.getResources().getColor(R.color.colorPrimary));
@@ -146,6 +146,8 @@ public class ListViewAdapter extends BaseAdapter{
                 overUnder.setTextColor(context.getResources().getColor(R.color.colorListRed));
             }
         }
+
+        Log.d("listviewadapter", "over under is " + ovUn);
 
         categoryName.setText(catName);
         expenses.setText(fmtExp);

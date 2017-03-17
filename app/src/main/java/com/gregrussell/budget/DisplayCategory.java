@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.SQLException;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -28,6 +29,8 @@ public class DisplayCategory extends Activity{
     TextView categoryTextView;
     DataBaseHelperCategory myDBHelper;
     int categoryID;
+    private static ExpenseObj expenseObj = new ExpenseObj();
+    ImageView editButtonProjected;
 
 
     @Override
@@ -44,6 +47,18 @@ public class DisplayCategory extends Activity{
         actual = (TextView)findViewById(R.id.actualDisplayCategory);
         categoryTextView = (TextView)findViewById(R.id.categoryDisplayCategory);
         ImageView backButton = (ImageView) findViewById(R.id.backButtonDisplayCategory);
+
+        //set button functionality
+        ImageView editButtonProjected = (ImageView)findViewById(R.id.editProjectedDisplayCategory);
+        editButtonProjected.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("displaycategory", "clicked edit; category id is " + categoryID + "; budget id is " + MainActivity.CURRENT_BUDGET);
+                AsyncEditProjectedExpenses task = new AsyncEditProjectedExpenses();
+                task.execute("19500.59");
+            }
+        });
+
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,7 +82,7 @@ public class DisplayCategory extends Activity{
         @Override
         protected String doInBackground(Void... params){
 
-            return GetCategory();
+            return getCategory();
 
         }
 
@@ -77,7 +92,7 @@ public class DisplayCategory extends Activity{
         }
     }
 
-    private String GetCategory(){
+    private String getCategory(){
 
         myDBHelper = new DataBaseHelperCategory(DisplayCategory.this);
 
@@ -115,8 +130,9 @@ public class DisplayCategory extends Activity{
         protected String[] doInBackground(Void... params) {
 
             //get projected expense and actual expenses
-            double projExpense = ProjectedExpenses();
-            double actualExpense = ActualExpenses();
+            double projExpense = projectedExpenses().getSpent();
+            double actualExpense = actualExpenses();
+
 
             //currency formatter
             NumberFormat fmt = NumberFormat.getCurrencyInstance();
@@ -139,7 +155,7 @@ public class DisplayCategory extends Activity{
     }
 
 
-    private Double ProjectedExpenses(){
+    private ExpenseObj projectedExpenses(){
 
         //open the database
         myDBHelper = new DataBaseHelperCategory(DisplayCategory.this);
@@ -161,15 +177,16 @@ public class DisplayCategory extends Activity{
 
         }
 
-        //use myDBHelper to get projected expense and return value
-        double projExpense = myDBHelper.getProjectedExpenseForCategory(categoryID, MainActivity.CURRENT_BUDGET);
+        //use myDBHelper to get projected expense object and return
+        expenseObj = myDBHelper.getProjectedExpenseForCategory(categoryID, MainActivity.CURRENT_BUDGET);
         myDBHelper.close();
 
-        return projExpense;
+
+        return expenseObj;
 
     }
 
-    private Double ActualExpenses(){
+    private Double actualExpenses(){
 
         //open the database
         myDBHelper = new DataBaseHelperCategory(DisplayCategory.this);
@@ -196,6 +213,66 @@ public class DisplayCategory extends Activity{
         myDBHelper.close();
 
         return actualExpense;
+
+    }
+
+
+
+    private class AsyncEditProjectedExpenses extends AsyncTask<String,Void,Double>{
+
+        @Override
+        protected Double doInBackground(String... projectedAmountString) {
+
+
+
+            //get the expense object
+           ExpenseObj expenseObj = projectedExpenses();
+
+            //update the expense object's Spent param with projectedAmountString
+            expenseObj.setSpent(Double.parseDouble(projectedAmountString[0]));
+
+            Log.d("displaycategory", "projectedamountstring is " + projectedAmountString[0] +
+                    "expenseObj cat is " + expenseObj.getCategoryName() + " expenseobj cat id is " +
+                    expenseObj.getCategoryID() + " expenseobj id is " + expenseObj.getID());
+
+            //open the database
+            myDBHelper = new DataBaseHelperCategory(DisplayCategory.this);
+
+            try {
+                myDBHelper.createDataBase();
+            } catch (IOException ioe) {
+                throw new Error("Unable to create database");
+
+            }
+
+            try {
+
+                myDBHelper.openDataBase();
+
+            } catch (SQLException sqle) {
+
+                throw sqle;
+
+            }
+
+            int i = myDBHelper.updateExpense(expenseObj);
+            Log.d("displaycategory", "updated row is " + i);
+            myDBHelper.close();
+
+            return null;
+
+
+        }
+
+        @Override
+        protected void onPostExecute(Double newProjectedExpenses) {
+
+            AsyncLoadProjectedAndActual task = new AsyncLoadProjectedAndActual();
+            task.execute();
+
+
+
+        }
 
     }
 

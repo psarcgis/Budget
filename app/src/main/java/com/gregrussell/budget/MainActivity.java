@@ -40,6 +40,18 @@ public class MainActivity extends Activity {
     TextView spent;
     ListView listView;
 
+    @Override
+    protected void onResume(){
+
+        super.onResume();
+        AsyncLoadHeader loadHeader = new AsyncLoadHeader();
+        loadHeader.execute();
+
+        AsyncLoadList loadList = new AsyncLoadList();
+        loadList.execute();
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -244,7 +256,7 @@ public class MainActivity extends Activity {
         @Override
         protected String[] doInBackground(Void... params) {
 
-            return PopulateHeader();
+            return populateHeader();
         }
 
 
@@ -286,7 +298,7 @@ public class MainActivity extends Activity {
         }
 
 
-        private String[] PopulateHeader(){
+        private String[] populateHeader(){
 
             Log.d("listDataObj", "Entered PopulateHeader, current budget is " + CURRENT_BUDGET);
 
@@ -338,7 +350,7 @@ public class MainActivity extends Activity {
             String budName = listData.getBudgetName();
             allExp = listData.getAllExpenses();
             double totSpent = listData.getTotalSpent();
-            diff = allExp - totSpent;
+            diff = totSpent - allExp;
 
 
 
@@ -361,18 +373,24 @@ public class MainActivity extends Activity {
 
 
             //create shortened format of difference
-            if(diff < 1000){
+            if(Math.abs(diff) < 1000){
+
                 fmtDiff = lowFmt.format(diff);
-            }else if(diff >= 1000 && diff < 1000000 ){
+            }else if(Math.abs(diff) >= 1000 && Math.abs(diff) < 1000000 ){
+
                 diff = diff / 1000;
                 fmtDiff = highFmt.format(diff) + "K";
-            }else if (diff >= 1000000 && diff < 1000000000){
+            }else if (Math.abs(diff) >= 1000000 && Math.abs(diff) < 1000000000){
+
                 diff = diff / 1000000;
                 fmtDiff = highFmt.format(diff) + "M";
             }else{
+
                 diff = diff / 1000000000;
                 fmtDiff = highFmt.format(diff) + "B";
             }
+
+
 
 
 
