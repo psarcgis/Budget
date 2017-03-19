@@ -646,8 +646,8 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
             projectedExpense.setCategoryName(cursor.getString(Constants.EXPENSES_CATEGORY_NAME_POSITION));
             projectedExpense.setSpent(cursor.getDouble(Constants.EXPENSES_ESTIMATED_EXPENSE_POSITION));
 
-        }else projectedExpense = null;
 
+        }else projectedExpense = null;
 
         return projectedExpense;
     }
@@ -688,21 +688,24 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
 
     //method to return the projected income for a given budget
-    public Double getProjectedIncome(int budgetID){
+    public IncomeObj getProjectedIncome(int budgetID){
 
 
-        double projectedExpense;
+        IncomeObj projectedIncome = new IncomeObj();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + Income.INCOME_TABLE_NAME + " WHERE " +
                 Income.INCOME_BUDGET_ID + " = " + budgetID, null);
 
         if(cursor.moveToFirst()){
-            projectedExpense = cursor.getDouble(Constants.INCOME_ESTIMATE_POSITION);
-        }else projectedExpense = 0.0;
+            projectedIncome.setID(cursor.getInt(Constants.INCOME_ID_POSITION));
+            projectedIncome.setBudgetID(cursor.getInt(Constants.INCOME_BUDGET_ID_POSITION));
+            projectedIncome.setBudgetName(cursor.getString(Constants.INCOME_BUDGET_NAME_POSITION));
+            projectedIncome.setIncome(cursor.getDouble(Constants.INCOME_ESTIMATE_POSITION));
+        }else projectedIncome = null;
 
 
-        return projectedExpense;
+        return projectedIncome;
     }
 
     //method to return the total amount earned for a given budget
@@ -787,6 +790,20 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         //updating row
         return db.update(Expenses.EXPENSES_TABLE_NAME, values, Expenses._ID + " = " + expenseObj.getID(), null);
+
+
+    }
+
+    public int updateIncome(IncomeObj incomeObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        //values that are to be updated
+        values.put(Income.INCOME_ESTIMATE, incomeObj.getIncome());
+
+        //updating row
+        return db.update(Income.INCOME_TABLE_NAME, values, Income._ID + " = " + incomeObj.getID(), null);
 
 
     }

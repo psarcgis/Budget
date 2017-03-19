@@ -1,17 +1,35 @@
 package com.gregrussell.budget;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.SQLException;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.SpannableStringBuilder;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +47,9 @@ public class DisplayCategory extends Activity{
     TextView categoryTextView;
     DataBaseHelperCategory myDBHelper;
     int categoryID;
-    private static ExpenseObj expenseObj = new ExpenseObj();
-    ImageView editButtonProjected;
+    EditText projectedEditText;
+    String categoryString;
+    TextView categoryEditProjectedExpenses;
 
 
     @Override
@@ -38,34 +57,149 @@ public class DisplayCategory extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_category);
 
+        //initializing for editButton functionality
+        final Context context = this;
+        final LayoutInflater inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+
         //get the category ID from the extra on the intent
         Intent intent = getIntent();
         categoryID = intent.getIntExtra(MainActivity.EXTRA_MESSAGE_TO_DISPLAY_CATEGORY,-1);
 
         //initializing views
-        projected = (TextView)findViewById(R.id.projectedDisplayCategory);
+        projected = (TextView)findViewById(R.id.projectedTextViewDisplayCategory);
         actual = (TextView)findViewById(R.id.actualDisplayCategory);
         categoryTextView = (TextView)findViewById(R.id.categoryDisplayCategory);
         ImageView backButton = (ImageView) findViewById(R.id.backButtonDisplayCategory);
 
+
+
+
+
+
         //set button functionality
-        ImageView editButtonProjected = (ImageView)findViewById(R.id.editProjectedDisplayCategory);
+        final ImageView editButtonProjected = (ImageView)findViewById(R.id.editProjectedDisplayCategory);
         editButtonProjected.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("displaycategory", "clicked edit; category id is " + categoryID + "; budget id is " + MainActivity.CURRENT_BUDGET);
-                AsyncEditProjectedExpenses task = new AsyncEditProjectedExpenses();
-                //execute will receive value from user input
-                task.execute("19500.59");
+
+
+                final View editExpensesDialog = inflater.inflate(R.layout.edit_projected_expenses,null);
+                projectedEditText = (EditText)editExpensesDialog.findViewById(R.id.editTextEditProjectedExpenses);
+                categoryEditProjectedExpenses = (TextView)editExpensesDialog.findViewById(R.id.categoryEditProjectedExpenses);
+                categoryEditProjectedExpenses.setText(categoryString);
+
+
+
+                //create a dialog box to enter new projected expenses
+
+                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+                // set prompts.xml to alertdialog builder
+                alertDialogBuilder.setView(editExpensesDialog);
+
+
+
+                // set dialog message
+                alertDialogBuilder
+                        .setCancelable(false)
+                        .setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+
+                                        String editTextString = String.valueOf(projectedEditText.getText());
+                                        double editTextDouble;
+
+                                        //checks if input is a double, and updates projected expenses if it is
+                                        try{
+                                           editTextDouble = Double.parseDouble(editTextString);
+                                            //currency formatter
+                                            NumberFormat fmt = NumberFormat.getCurrencyInstance();
+                                            projected.setText(fmt.format(editTextDouble));
+
+
+                                            AsyncEditProjectedExpenses task = new AsyncEditProjectedExpenses();
+                                            //call task to update table with user inputed value
+                                            task.execute(editTextDouble);
+
+                                        }catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+                                    }
+
+
+                                })
+                        .setNegativeButton("Cancel",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+
+                                        dialog.cancel();
+                                    }
+                                });
+
+                // create alert dialog
+                AlertDialog alertDialog = alertDialogBuilder.create();
+
+                TextWatcher textWatcher = new TextWatcher() {
+                    int decimal;
+                    String afterDecimal;
+
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                        Log.d("onTextChanged", afterDecimal + "decimal is " + String.valueOf(decimal));
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                        decimal = s.toString().indexOf(".");
+                        if(decimal > 1 ) {
+                            afterDecimal = s.toString().substring(decimal + 1);
+                        }
+                        Log.d("onTextChanged", afterDecimal + "decimal is " + String.valueOf(decimal));
+
+
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+
+                        if(afterDecimal != null && afterDecimal.length() > 2){
+                            Editable editable = new SpannableStringBuilder(s.toString().substring(0,decimal+3));
+                            s = editable;
+                            projectedEditText.setText(s.toString());
+                            //projected.setText(s.toString());
+                        }
+                        Log.d("afterTextChanged", s.toString());
+
+                    }
+                };
+
+                projectedEditText.addTextChangedListener(textWatcher);
+
+                // show it
+                alertDialog.show();
+
             }
         });
-
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
+
+
+
+
+
+
+
+
+
+
 
         //load category and projected and actual expenses
         AsyncLoadCategoryName loadCategory = new AsyncLoadCategoryName();
@@ -89,6 +223,7 @@ public class DisplayCategory extends Activity{
 
         @Override
         protected void onPostExecute(String category){
+            categoryString = category;
             categoryTextView.setText(category);
         }
     }
@@ -134,11 +269,12 @@ public class DisplayCategory extends Activity{
             double projExpense = projectedExpenses().getSpent();
             double actualExpense = actualExpenses();
 
-
             //currency formatter
             NumberFormat fmt = NumberFormat.getCurrencyInstance();
 
-            //String array that is returned
+
+            //array that is returned
+
             String[] numbers = {fmt.format(projExpense),fmt.format(actualExpense)};
             return numbers;
 
@@ -149,7 +285,7 @@ public class DisplayCategory extends Activity{
         protected void onPostExecute(String[] numbers) {
 
 
-            projected.setText(numbers[0]);
+            projected.setText((numbers[0]));
             actual.setText(numbers[1]);
 
         }
@@ -179,7 +315,7 @@ public class DisplayCategory extends Activity{
         }
 
         //use myDBHelper to get projected expense object and return
-        expenseObj = myDBHelper.getProjectedExpenseForCategory(categoryID, MainActivity.CURRENT_BUDGET);
+        ExpenseObj expenseObj = myDBHelper.getProjectedExpenseForCategory(categoryID, MainActivity.CURRENT_BUDGET);
         myDBHelper.close();
 
 
@@ -219,10 +355,10 @@ public class DisplayCategory extends Activity{
 
 
 
-    private class AsyncEditProjectedExpenses extends AsyncTask<String,Void,Double>{
+    private class AsyncEditProjectedExpenses extends AsyncTask<Double,Void,Double>{
 
         @Override
-        protected Double doInBackground(String... projectedAmountString) {
+        protected Double doInBackground(Double... projectedAmount) {
 
 
 
@@ -230,9 +366,9 @@ public class DisplayCategory extends Activity{
            ExpenseObj expenseObj = projectedExpenses();
 
             //update the expense object's Spent param with projectedAmountString
-            expenseObj.setSpent(Double.parseDouble(projectedAmountString[0]));
+            expenseObj.setSpent(projectedAmount[0]);
 
-            Log.d("displaycategory", "projectedamountstring is " + projectedAmountString[0] +
+            Log.d("displaycategory", "projectedamountstring is " + projectedAmount[0] +
                     "expenseObj cat is " + expenseObj.getCategoryName() + " expenseobj cat id is " +
                     expenseObj.getCategoryID() + " expenseobj id is " + expenseObj.getID());
 
@@ -276,5 +412,7 @@ public class DisplayCategory extends Activity{
         }
 
     }
+
+
 
 }

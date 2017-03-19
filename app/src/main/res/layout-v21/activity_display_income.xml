@@ -29,8 +29,9 @@
             android:gravity="left"
             android:background="?android:attr/selectableItemBackgroundBorderless"/>
 
+
         <TextView
-            android:id="@+id/titleDisplayIncome"
+            android:id="@+id/categoryDisplayIncome"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             android:layout_gravity="center"
@@ -69,11 +70,35 @@
 
 
                 <LinearLayout
+                    android:padding="30dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:layout_gravity="center_vertical"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/projected"
+                            android:textSize="20sp"
+                            />
+
+                        <TextView
+                            android:layout_gravity="center_vertical"
+                            android:id="@+id/projectedTextViewDisplayIncome"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="20sp"/>
+
+                    </LinearLayout>
+
                     <ImageView
+                        android:layout_gravity="center_vertical"
                         android:id="@+id/editProjectedDisplayIncome"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
@@ -81,10 +106,6 @@
                         android:src="@drawable/edit_icon"
                         android:background="?android:attr/selectableItemBackgroundBorderless"/>
 
-                    <TextView
-                        android:id="@+id/projectedDisplayIncome"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
 
                 </LinearLayout>
 

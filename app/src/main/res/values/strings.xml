@@ -3,4 +3,5 @@
     <string name="earned">Earned -\u0020</string>
     <string name="projected">Projected -\u0020</string>
     <string name="income">Income</string>
+    <string name="dollarSign">$</string>
 </resources>

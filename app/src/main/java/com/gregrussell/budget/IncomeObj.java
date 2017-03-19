@@ -50,10 +50,10 @@ public class IncomeObj {
     }
 
 
-    public double getSpent(){
+    public double getIncome(){
         return this._Income;
     }
-    public void setSpent(double income){
+    public void setIncome(double income){
         this._Income = income;
     }
 

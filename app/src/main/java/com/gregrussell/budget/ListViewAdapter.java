@@ -91,7 +91,10 @@ public class ListViewAdapter extends BaseAdapter{
         String catName = categoryList.get(position);
         double exp = expenseList.get(position);
         double totSpent = spentList.get(position);
-        double diff = exp - totSpent;
+        double diff;
+        if(position != 0) {
+            diff = exp - totSpent;
+        }else diff = totSpent - exp;
 
         //formatter to convert double under 1000 to currency (only for difference text view)
         DecimalFormat lowFmt = new DecimalFormat("+$#,##0.00;-$#,##0.00");
