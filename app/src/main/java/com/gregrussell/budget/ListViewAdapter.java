@@ -78,8 +78,8 @@ public class ListViewAdapter extends BaseAdapter{
 
         //make spent text view read "earned" for income field, otherwise read "spent"
         if(position==0){
-            spentOrEarned.setText("Earned - ");
-        }else spentOrEarned.setText("Spent - ");
+            spentOrEarned.setText(context.getResources().getText(R.string.earned));
+        }else spentOrEarned.setText(context.getResources().getText(R.string.spent));
 
 
         List<String> categoryList = ldo.getCategoryList();

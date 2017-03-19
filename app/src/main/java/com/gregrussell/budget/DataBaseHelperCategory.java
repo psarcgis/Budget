@@ -273,18 +273,18 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         return categoriesList;
     }
 
-    public void addSpending(Date date, int budgetID, String budgetName, int categoryID, String categoryName, double spent, String description) {
+    public void addSpending(SpendingObj spendingObj) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(Spending.SPENDING_DATE, date.getTime());
-        values.put(Spending.SPENDING_BUDGET_ID, budgetID);
-        values.put(Spending.SPENDING_BUDGET_NAME, budgetName);
-        values.put(Spending.SPENDING_CATEGORY_ID, categoryID);
-        values.put(Spending.SPENDING_CATEGORY_NAME, categoryName);
-        values.put(Spending.SPENDING_SPENT, spent);
-        values.put(Spending.SPENDING_EXPENSE_DESCRIPTION, description);
+        values.put(Spending.SPENDING_DATE, spendingObj.getDate().getTime());
+        values.put(Spending.SPENDING_BUDGET_ID, spendingObj.getBudgetID());
+        values.put(Spending.SPENDING_BUDGET_NAME, spendingObj.getBudgetName());
+        values.put(Spending.SPENDING_CATEGORY_ID, spendingObj.getCategoryID());
+        values.put(Spending.SPENDING_CATEGORY_NAME, spendingObj.getCategoryName());
+        values.put(Spending.SPENDING_SPENT, spendingObj.getSpent());
+        values.put(Spending.SPENDING_EXPENSE_DESCRIPTION, spendingObj.getDescription());
 
 
         // Inserting Row
@@ -399,7 +399,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         if (cursor.moveToFirst()) {
             //if there are no entries, cursor will come back null
             try {
-                return cursor.getInt(2);
+                return cursor.getInt(Constants.SPENDING_BUDGET_ID_POSITION);
             } catch (Exception e) {
 
                 return -1;
@@ -420,7 +420,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         if (cursor.moveToFirst()) {
             //if there are no entries, cursor will come back null
             try {
-                return cursor.getInt(2);
+                return cursor.getInt(Constants.EARNING_BUDGET_ID_POSITION);
             } catch (Exception e) {
 
                 return -1;

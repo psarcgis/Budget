@@ -39,6 +39,17 @@ public class SpendingObj {
         this._Description = _Description;
     }
 
+    public SpendingObj(Date _Date, int _BudgetID, String _BudgetName, int _CategoryID, String _CategoryName, double _Spent, String _Description){
+
+        this._Date = _Date;
+        this._BudgetID = _BudgetID;
+        this._BudgetName = _BudgetName;
+        this._CategoryID = _CategoryID;
+        this._CategoryName = _CategoryName;
+        this._Spent = _Spent;
+        this._Description = _Description;
+    }
+
 
     public int getID(){
         return this._ID;

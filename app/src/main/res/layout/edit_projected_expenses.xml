@@ -20,16 +20,13 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_weight="2">
+            android:layout_weight="1">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -51,10 +48,7 @@
 
         </LinearLayout>
 
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+
 
 
     </LinearLayout>
