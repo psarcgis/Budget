@@ -808,6 +808,33 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
     }
 
+    public int updateSpending(SpendingObj spendingObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        //values that are to be updated
+        values.put(Spending.SPENDING_DATE, spendingObj.getDate().getTime());
+        values.put(Spending.SPENDING_SPENT, spendingObj.getSpent());
+        values.put(Spending.SPENDING_EXPENSE_DESCRIPTION, spendingObj.getDescription());
+
+        //updating row
+        return db.update(Spending.SPENDING_TABLE_NAME, values, Spending._ID + " = " + spendingObj.getID(), null);
+
+
+    }
+
+    public int deleteSpending(SpendingObj spendingObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        //updating row
+        return db.delete(Spending.SPENDING_TABLE_NAME, Spending._ID + " = " + spendingObj.getID(), null);
+
+
+    }
+
 
 
 
