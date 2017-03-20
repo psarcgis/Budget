@@ -35,6 +35,25 @@ public class EarningObj {
         this._Description = _Description;
     }
 
+    public EarningObj(int _ID, Date _Date, int _BudgetID, String _BudgetName, double _Earned, String _Description) {
+
+        this._ID = _ID;
+        this._Date = _Date;
+        this._BudgetID = _BudgetID;
+        this._BudgetName = _BudgetName;
+        this._Earned = _Earned;
+        this._Description = _Description;
+    }
+
+    public EarningObj(Date _Date, int _BudgetID, String _BudgetName, double _Earned, String _Description) {
+
+        this._Date = _Date;
+        this._BudgetID = _BudgetID;
+        this._BudgetName = _BudgetName;
+        this._Earned = _Earned;
+        this._Description = _Description;
+    }
+
 
     public int getID() {
         return this._ID;

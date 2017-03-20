@@ -1,10 +1,12 @@
 <resources>
     <string name="app_name">Budget</string>
-    <string name="earned">Earned -\u0020</string>
-    <string name="projected">Projected -\u0020</string>
+    <string name="earned">Earned:\u0020</string>
+    <string name="projected">Projected:\u0020</string>
     <string name="income">Income</string>
     <string name="dollarSign">$</string>
-    <string name="spent">Spent -\u0020</string>
+    <string name="spent">Spent:\u0020</string>
     <string name="date">Date -\u0020</string>
     <string name="description">Description (optional):</string>
+    <string name="projectedExpenses">Projected Expenses:\u0020</string>
+    <string name="totalSpent">Total Spent:</string>
 </resources>

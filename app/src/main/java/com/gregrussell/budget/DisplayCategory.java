@@ -57,7 +57,6 @@ public class DisplayCategory extends Activity{
     EditText projectedEditText;
     String categoryString;
     TextView categoryEditProjectedExpenses;
-    String dateString;
     Calendar myCalendar;
     ExpenseObj expenseObj;
     LayoutInflater inflater;
@@ -334,8 +333,8 @@ public class DisplayCategory extends Activity{
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
+                //if there is a decimal, get string of digits following decimal
                 decimal = s.toString().indexOf(".");
-                Log.d("onTextChanged", "decimal is " + decimal);
                 if(decimal >= 0) {
                     afterDecimal = s.toString().substring(decimal + 1);
                 }
@@ -345,11 +344,10 @@ public class DisplayCategory extends Activity{
             @Override
             public void afterTextChanged(Editable s) {
 
+                //prevent more than two digits being added after decimal
                 if(afterDecimal != null && afterDecimal.length() > 2){
-                    Editable editable = new SpannableStringBuilder(s.toString().substring(0,decimal+3));
-                    s = editable;
+                    s = new SpannableStringBuilder(s.toString().substring(0,decimal+3));
                     projectedEditText.setText(s.toString());
-                    //projected.setText(s.toString());
                 }
                 Log.d("afterTextChanged", s.toString());
             }
@@ -368,6 +366,8 @@ public class DisplayCategory extends Activity{
         final EditText descriptionEdit = (EditText)addSpendingDialog.findViewById(R.id.descriptionAddNewSpendingDialog);
         TextView categoryText = (TextView)addSpendingDialog.findViewById(R.id.categoryAddNewSpendingDialog);
         categoryText.setText(categoryString);
+        TextView spentEarnedText = (TextView)addSpendingDialog.findViewById(R.id.spentEarnedAddNewSpendingDialog);
+        spentEarnedText.setText(DisplayCategory.this.getResources().getText(R.string.spent));
 
         //set the date to today
         myCalendar = Calendar.getInstance();
@@ -510,8 +510,8 @@ public class DisplayCategory extends Activity{
 
             //use myDBHelper add spendingObj to the Spending table
             myDBHelper.addSpending(spendingObj[0]);
-            myDBHelper.close();
             spendingObjList = myDBHelper.getSpendingsByCategory(MainActivity.CURRENT_BUDGET, categoryID);
+            myDBHelper.close();
             ListViewAdapterSpending adapter = null;
             if(spendingObjList != null) {
                 adapter = new ListViewAdapterSpending(DisplayCategory.this, spendingObjList);
@@ -603,9 +603,13 @@ public class DisplayCategory extends Activity{
         final EditText spentEdit = (EditText)addSpendingDialog.findViewById(R.id.spentAddNewSpendingDialog);
         final EditText descriptionEdit = (EditText)addSpendingDialog.findViewById(R.id.descriptionAddNewSpendingDialog);
         TextView categoryText = (TextView)addSpendingDialog.findViewById(R.id.categoryAddNewSpendingDialog);
+        TextView spentEarnedText = (TextView)addSpendingDialog.findViewById(R.id.spentEarnedAddNewSpendingDialog);
+
+
 
         //set text
         categoryText.setText(spendingObjOld.getCategoryName());
+        spentEarnedText.setText(DisplayCategory.this.getResources().getText(R.string.spent));
 
         //formatter to convert double to 2 decimal places
         DecimalFormat fmt = new DecimalFormat("##0.00;-##0.00");
@@ -738,6 +742,7 @@ public class DisplayCategory extends Activity{
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
+                //if there is a decimal, get string of digits following decimal
                 decimal = s.toString().indexOf(".");
                 if(decimal >= 0) {
                     afterDecimal = s.toString().substring(decimal + 1);
@@ -748,11 +753,11 @@ public class DisplayCategory extends Activity{
             @Override
             public void afterTextChanged(Editable s) {
 
+                //prevent more than two digits being added after decimal
                 if(afterDecimal != null && afterDecimal.length() > 2){
                     Editable editable = new SpannableStringBuilder(s.toString().substring(0,decimal+3));
                     s = editable;
                     spentEdit.setText(s.toString());
-                    //projected.setText(s.toString());
                 }
                 Log.d("afterTextChanged", s.toString());
             }
@@ -762,6 +767,8 @@ public class DisplayCategory extends Activity{
         alertDialog.show();
     }
 
+
+    //class to edit an entry
     private class AsyncEditSpending extends AsyncTask<SpendingObj,Void,ListViewAdapterSpending>{
 
 
@@ -782,10 +789,10 @@ public class DisplayCategory extends Activity{
                 throw sqle;
             }
 
-            //use myDBHelper add spendingObj to the Spending table
+            //use myDBHelper update given spendingObj
             myDBHelper.updateSpending(spendingObj[0]);
-            myDBHelper.close();
             spendingObjList = myDBHelper.getSpendingsByCategory(MainActivity.CURRENT_BUDGET, categoryID);
+            myDBHelper.close();
             ListViewAdapterSpending adapter = null;
             if(spendingObjList != null) {
                 adapter = new ListViewAdapterSpending(DisplayCategory.this, spendingObjList);
@@ -812,6 +819,7 @@ public class DisplayCategory extends Activity{
         }
     }
 
+    //class to delete a entry
     private class AsyncDeleteSpending extends AsyncTask<SpendingObj,Void,ListViewAdapterSpending>{
 
 
@@ -832,10 +840,10 @@ public class DisplayCategory extends Activity{
                 throw sqle;
             }
 
-            //use myDBHelper add spendingObj to the Spending table
+            //use myDBHelper to delete given spendingObj
             myDBHelper.deleteSpending(spendingObj[0]);
-            myDBHelper.close();
             spendingObjList = myDBHelper.getSpendingsByCategory(MainActivity.CURRENT_BUDGET, categoryID);
+            myDBHelper.close();
             ListViewAdapterSpending adapter = null;
             if(spendingObjList != null) {
                 adapter = new ListViewAdapterSpending(DisplayCategory.this, spendingObjList);

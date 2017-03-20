@@ -61,13 +61,16 @@ public class MainActivity extends Activity {
 
 
 
+
+
+
         //initializing views
         container = findViewById(R.id.container);
-        difference = (TextView)container.findViewById(R.id.difference);
-        overUnder = (TextView)container.findViewById(R.id.overUnder);
-        budgetName = (TextView)container.findViewById(R.id.budgetName);
-        projectedExpenses = (TextView)container.findViewById(R.id.projectedValue);
-        spent = (TextView)container.findViewById(R.id.spentValue);
+        difference = (TextView)findViewById(R.id.difference);
+        overUnder = (TextView)findViewById(R.id.overUnder);
+        budgetName = (TextView)findViewById(R.id.budgetName);
+        projectedExpenses = (TextView)findViewById(R.id.projectedValue);
+        spent = (TextView)findViewById(R.id.spentValue);
 
 
 
@@ -251,6 +254,7 @@ public class MainActivity extends Activity {
 
         double diff;
         double allExp;
+        double totSpent;
 
 
         @Override
@@ -268,16 +272,24 @@ public class MainActivity extends Activity {
 
             String ovUn;
 
-            if(diff < allExp){
+
+
+            //round because double doesn't know how to math
+            double roundTotSpent = Math.round(totSpent *100.0)/100.0;
+            double roundAllExp = Math.round(allExp *100.0)/100.0;
+
+            if(roundTotSpent < roundAllExp){
                 ovUn = "Under";
                 container.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
-            }else if(diff == allExp){
+            }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
                 container.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             }else {
                 ovUn = "Over";
                 container.setBackgroundColor(getResources().getColor(R.color.colorListRed));
             }
+
+
 
 
             //set text of textViews
@@ -349,7 +361,8 @@ public class MainActivity extends Activity {
             //pass data from list to objects
             String budName = listData.getBudgetName();
             allExp = listData.getAllExpenses();
-            double totSpent = listData.getTotalSpent();
+            totSpent = listData.getTotalSpent();
+            Log.d("populateheader", "listdata spent is " + listData.getTotalSpent());
             diff = totSpent - allExp;
 
 

@@ -75,11 +75,16 @@ public class ListViewAdapter extends BaseAdapter{
         TextView expenses = (TextView)currentView.findViewById(R.id.projectedValueItemLayout);
         TextView spent = (TextView)currentView.findViewById(R.id.spentValueItemLayout);
         TextView spentOrEarned = (TextView)currentView.findViewById(R.id.spentItemLayout);
+        TextView projected = (TextView)currentView.findViewById(R.id.projectedItemLayout);
 
         //make spent text view read "earned" for income field, otherwise read "spent"
         if(position==0){
             spentOrEarned.setText(context.getResources().getText(R.string.earned));
-        }else spentOrEarned.setText(context.getResources().getText(R.string.spent));
+            projected.setText(context.getResources().getText(R.string.projectedExpenses));
+        }else{
+            spentOrEarned.setText(context.getResources().getText(R.string.spent));
+            projected.setText(context.getResources().getText(R.string.projected));
+        }
 
 
         List<String> categoryList = ldo.getCategoryList();
