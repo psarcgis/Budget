@@ -17,21 +17,40 @@ public class EarningObj {
     Date _Date;
     int _BudgetID;
     String _BudgetName;
-    double _Spent;
+    double _Earned;
     String _Description;
 
     public EarningObj() {
 
     }
 
-    public EarningObj(int _ID, Timestamp _Timestamp, Date _Date, int _BudgetID, String _BudgetName, double _Spent, String _Description) {
+    public EarningObj(int _ID, Timestamp _Timestamp, Date _Date, int _BudgetID, String _BudgetName, double _Earned, String _Description) {
 
         this._ID = _ID;
         this._Timestamp = _Timestamp;
         this._Date = _Date;
         this._BudgetID = _BudgetID;
         this._BudgetName = _BudgetName;
-        this._Spent = _Spent;
+        this._Earned = _Earned;
+        this._Description = _Description;
+    }
+
+    public EarningObj(int _ID, Date _Date, int _BudgetID, String _BudgetName, double _Earned, String _Description) {
+
+        this._ID = _ID;
+        this._Date = _Date;
+        this._BudgetID = _BudgetID;
+        this._BudgetName = _BudgetName;
+        this._Earned = _Earned;
+        this._Description = _Description;
+    }
+
+    public EarningObj(Date _Date, int _BudgetID, String _BudgetName, double _Earned, String _Description) {
+
+        this._Date = _Date;
+        this._BudgetID = _BudgetID;
+        this._BudgetName = _BudgetName;
+        this._Earned = _Earned;
         this._Description = _Description;
     }
 
@@ -76,12 +95,12 @@ public class EarningObj {
         this._BudgetName = name;
     }
 
-    public double getSpent() {
-        return this._Spent;
+    public double getEarned() {
+        return this._Earned;
     }
 
-    public void setSpent(double spent) {
-        this._Spent = spent;
+    public void setEarned(double earned) {
+        this._Earned = earned;
     }
 
     public String getDescription() {
