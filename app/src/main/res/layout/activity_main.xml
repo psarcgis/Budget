@@ -1,201 +1,218 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- Main Container -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/colorBackgroundList"
-    tools:context="com.gregrussell.budget.MainActivity">
-
-    <FrameLayout
+    android:layout_height="match_parent">
+    <!-- Main Container -->
+    <LinearLayout
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/activity_main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/colorBackgroundList"
+        tools:context="com.gregrussell.budget.MainActivity">
 
-    <!-- Container to wrap left and right containers to height of right container -->
-        <LinearLayout
-            android:orientation="vertical"
-            android:id="@+id/container"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="30dp"
-            android:paddingTop="5dp"
-            android:paddingEnd="30dp"
-            android:paddingBottom="5dp">
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/budgetName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:layout_gravity="center_horizontal"
-                android:textColor="@color/colorLightText"
-                android:textSize="20sp"/>
-
+        <!-- Container to wrap left and right containers to height of right container -->
             <LinearLayout
+                android:orientation="vertical"
+                android:id="@+id/container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:paddingStart="30dp"
+                android:paddingTop="5dp"
+                android:paddingEnd="30dp"
+                android:paddingBottom="5dp">
 
-                <!-- Container for left side of layout-->
-                <LinearLayout
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+                <TextView
+                    android:id="@+id/budgetName"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:textStyle="bold"
+                    android:layout_gravity="center_horizontal"
+                    android:textColor="@color/colorLightText"
+                    android:textSize="20sp"/>
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-
-
+                    <!-- Container for left side of layout-->
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/projected"
+
+
+
+
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textStyle="bold"
-                            android:text="@string/projectedExpenses"
-                            android:textColor="@color/colorLightText"/>
-                        <TextView
-                            android:id="@+id/projectedValue"
+                            android:orientation="vertical">
+                            <TextView
+                                android:id="@+id/projected"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textStyle="bold"
+                                android:text="@string/projectedExpenses"
+                                android:textColor="@color/colorLightText"/>
+                            <TextView
+                                android:id="@+id/projectedValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/colorLightText"/>
+                        </LinearLayout>
+
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/colorLightText"/>
+                            android:orientation="vertical">
+                            <TextView
+                                android:id="@+id/spent"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/totalSpent"
+                                android:textStyle="bold"
+                                android:textColor="@color/colorLightText"/>
+                            <TextView
+                                android:id="@+id/spentValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/colorLightText"/>
+                        </LinearLayout>
+
+
+
                     </LinearLayout>
 
-                    <LinearLayout
+
+
+
+
+            <!-- Container for Right Side of layout-->
+                    <RelativeLayout
+                        android:id="@+id/rightSideLayout"
+                        android:layout_gravity="end|center_vertical"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/spent"
+                        android:background="@drawable/circle_for_header">
+
+                        <LinearLayout
+                            android:layout_centerInParent="true"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/totalSpent"
-                            android:textStyle="bold"
-                            android:textColor="@color/colorLightText"/>
-                        <TextView
-                            android:id="@+id/spentValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/colorLightText"/>
-                    </LinearLayout>
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/difference"
+                                android:layout_gravity="center"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/colorLightText"/>
+                            <TextView
+                                android:id="@+id/overUnder"
+                                android:layout_gravity="center"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/colorLightText"/>
+
+                        </LinearLayout>
 
 
+
+                    </RelativeLayout>
 
                 </LinearLayout>
 
 
-
-
-
-        <!-- Container for Right Side of layout-->
-                <RelativeLayout
-                    android:id="@+id/rightSideLayout"
-                    android:layout_gravity="end|center_vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/circle_for_header">
-
-                    <LinearLayout
-                        android:layout_centerInParent="true"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/difference"
-                            android:layout_gravity="center"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/colorLightText"/>
-                        <TextView
-                            android:id="@+id/overUnder"
-                            android:layout_gravity="center"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/colorLightText"/>
-
-                    </LinearLayout>
-
-
-
-                </RelativeLayout>
-
             </LinearLayout>
 
 
-        </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/headerLoadingPanel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#00000000"
+                android:gravity="center" >
+
+                <ProgressBar
+                    android:id="@+id/headerProgress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:indeterminate="true"/>
+            </RelativeLayout>
 
 
 
-        <RelativeLayout
-            android:id="@+id/headerLoadingPanel"
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/listViewFrame"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#00000000"
-            android:gravity="center" >
-
-            <ProgressBar
-                android:id="@+id/headerProgress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:indeterminate="true"/>
-        </RelativeLayout>
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
 
+            <ListView
+                android:id="@+id/listView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/listViewFrame"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-
-        <ListView
-            android:id="@+id/listView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </ListView>
+            </ListView>
 
 
 
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:background="@drawable/header_shadow">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:background="@drawable/header_shadow">
 
-        </RelativeLayout>
+            </RelativeLayout>
 
-        <RelativeLayout
-            android:id="@+id/listLoadingPanel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#00000000"
-            android:gravity="center" >
+            <RelativeLayout
+                android:id="@+id/listLoadingPanel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#00000000"
+                android:gravity="center" >
 
-            <ProgressBar
-                android:id="@+id/listProgress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                <ProgressBar
+                    android:id="@+id/listProgress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
 
-                android:indeterminate="true"/>
-        </RelativeLayout>
-
-
-    </FrameLayout>
+                    android:indeterminate="true"/>
+            </RelativeLayout>
 
 
+        </FrameLayout>
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_margin="30dp"
+        android:id="@+id/addMainActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:elevation="5dp"
+        app:borderWidth="0dp"
+        android:src="@drawable/add_icon_white1"
+        app:rippleColor="@color/colorCirclePressed"
+        app:backgroundTint="@color/colorPrimary"
+        android:layout_gravity="bottom|end"
+        android:clickable="true" />
 
 
-</LinearLayout>
+</android.support.design.widget.CoordinatorLayout>

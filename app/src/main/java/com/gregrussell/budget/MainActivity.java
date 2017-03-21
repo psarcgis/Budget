@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.LightingColorFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -39,6 +40,7 @@ public class MainActivity extends Activity {
     TextView projectedExpenses;
     TextView spent;
     ListView listView;
+    FloatingActionButton addCategoryButton;
 
     @Override
     protected void onResume(){
@@ -71,10 +73,8 @@ public class MainActivity extends Activity {
         budgetName = (TextView)findViewById(R.id.budgetName);
         projectedExpenses = (TextView)findViewById(R.id.projectedValue);
         spent = (TextView)findViewById(R.id.spentValue);
-
-
-
-
+        addCategoryButton = (FloatingActionButton)findViewById(R.id.addMainActivity);
+        addCategoryButton.setVisibility(View.INVISIBLE);
 
         //setting color for header progress bar
         ProgressBar headerProgress = (ProgressBar) findViewById(R.id.headerProgress);
@@ -94,29 +94,13 @@ public class MainActivity extends Activity {
         AsyncLoadList loadList = new AsyncLoadList();
         loadList.execute();
 
-
-        /*
-        List<String> categories = myDBHelper.getAllCategories();
-
-        for (int i =0; i < categories.size(); i++){
-            Log.d("categoriesList", categories.get(i));
-        }
-
-        //myDBHelper.addSpending(3,"March 2017", 5, "Cellphone", 40.50, "Cellphone bill");
-
-
-        //get a list of all the rows with the specified budget ID and tell the size of the list
-        List<SpendingObj> list = myDBHelper.getSpendings(2);
-
-        try{
-            Log.d("list size", String.valueOf(list.size()));
-        }
-        catch (Exception e){
-            Log.d("list size", "size is null");
-        }*/
-
-
-
+        //onClickListener for addCategoryButton
+        addCategoryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addCategory();
+            }
+        });
 
 
     }
@@ -440,6 +424,7 @@ public class MainActivity extends Activity {
             //progress bar is visible by default. Turn invisible once loading is complete
             View listLoadingPanel = findViewById(R.id.listLoadingPanel);
             listLoadingPanel.setVisibility(View.INVISIBLE);
+            addCategoryButton.setVisibility(View.VISIBLE);
 
             Log.d("listView", "listViewAdapter set");
 
@@ -508,13 +493,19 @@ public class MainActivity extends Activity {
             View view = findViewById(R.id.listViewFrame);
             listView = (ListView)view.findViewById(R.id.listView);
             adapter = new ListViewAdapter(MainActivity.this,listData);
-
-
-
-
         }
+    }
 
+    private void addCategory(){
 
+        /**Bring up dialog
+         * allow user to pick from already created category that's not being used
+         * or
+         * name new category - MUST ENTER A NAME
+         * decide if category will become a default - not default by default
+         * allow user to enter projected expense for category - $0.00 by default
+         *
+         */
     }
 
 
