@@ -200,6 +200,8 @@ public class DisplayIncome extends Activity {
     }
 
 
+    //Classes no longer used
+
     /*private class AsyncEditProjectedIncome extends AsyncTask<Double,Void,Double>{
 
             @Override      protected Double doInBackground(Double... projectedAmount) {
@@ -388,7 +390,7 @@ public class DisplayIncome extends Activity {
                 dpg.show();
             }
         });
-        //create a dialog box to enter new projected expenses
+        //create a dialog box to add new income source
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(DisplayIncome.this);
 
         // set prompts.xml to alertdialog builder

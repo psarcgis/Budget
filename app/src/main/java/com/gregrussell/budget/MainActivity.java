@@ -2,6 +2,7 @@ package com.gregrussell.budget;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.SQLException;
 import android.graphics.Color;
@@ -9,14 +10,28 @@ import android.graphics.LightingColorFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -41,6 +56,7 @@ public class MainActivity extends Activity {
     TextView spent;
     ListView listView;
     FloatingActionButton addCategoryButton;
+    List<CategoryObj> unusedCategoryList = new ArrayList<CategoryObj>();
 
     @Override
     protected void onResume(){
@@ -153,6 +169,12 @@ public class MainActivity extends Activity {
 
                 throw sqle;
 
+            }
+
+            //myDBHelper.addCategory("Dating", false);
+            unusedCategoryList = myDBHelper.getUnusedCategories(CURRENT_BUDGET);
+            for(int i =0; i < unusedCategoryList.size(); i++){
+                Log.d("allCategoriesNotUsed", unusedCategoryList.get(i).getCategoryName());
             }
 
             Timestamp spendingTime = myDBHelper.getSpendingTimestamp();
@@ -506,6 +528,199 @@ public class MainActivity extends Activity {
          * allow user to enter projected expense for category - $0.00 by default
          *
          */
+
+        LayoutInflater inflater = getLayoutInflater();
+        final View addCategoryDialog = inflater.inflate(R.layout.add_category_dialog_layout,null);
+        final CheckBox checkBox = (CheckBox)addCategoryDialog.findViewById(R.id.checkBoxAddCategoryDialog);
+        final RadioButton radioUseExisting = (RadioButton)addCategoryDialog.findViewById(R.id.radioUseExistingAddCategoryDialog);
+        final RadioButton radioAddNew = (RadioButton)addCategoryDialog.findViewById(R.id.radioAddNewAddCategoryDialog);
+        final Spinner categorySpinner = (Spinner)addCategoryDialog.findViewById(R.id.spinnerAddCategoryDialog);
+        final EditText categoryNameEditText = (EditText)addCategoryDialog.findViewById(R.id.editTextNameAddCategoryDialog);
+
+
+
+
+
+        //create a dialog box to add new category
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        //set the layout the dialog uses
+        alertDialogBuilder.setView(addCategoryDialog);
+
+        //set up dialog
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                if(!radioAddNew.isChecked() && !radioUseExisting.isChecked()){
+                                    addCategory();
+                                }else
+                                if(String.valueOf(categoryNameEditText.getText()).equals("")){
+                                    addCategory();
+                                }else{
+                                    if(radioAddNew.isChecked()) {
+                                        CategoryObj categoryObj = new CategoryObj();
+                                        int isDefault;
+                                        if (checkBox.isChecked()) {
+                                            isDefault = 1;
+                                        } else isDefault = 0;
+                                        categoryObj.setCategoryName(String.valueOf(categoryNameEditText.getText()));
+                                        categoryObj.setDefaultCategory(isDefault);
+                                        //AsyncAddNewCategory
+                                    }else{
+                                        //AsyncAddExistingCategory
+                                    }
+                                }
+
+
+
+                            }
+
+
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+
+        //disable spinner and existing radio button if no existing categories, check radioAddNew
+        if(unusedCategoryList.size() == 0){
+            radioUseExisting.setEnabled(false);
+            categorySpinner.setEnabled(false);
+            radioAddNew.setChecked(true);
+        }
+
+
+        //setting what happens on click of radio buttons, spinner, and edit text
+        radioAddNew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //check radioAddNew, uncheck radioUseExisting, give focus to edit text, make
+                // keyboard appear
+                radioAddNew.setChecked(true);
+                radioUseExisting.setChecked(false);
+                categoryNameEditText.requestFocus();
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT,0);
+            }
+        });
+        radioUseExisting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //uncheck radioAddNew, check radioUseExisting take focus from edit text, make
+                // keyboard disappear
+                radioAddNew.setChecked(false);
+                radioUseExisting.setChecked(true);
+                categoryNameEditText.clearFocus();
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(categoryNameEditText.getWindowToken(), 0);
+            }
+        });
+        categoryNameEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //check radioAddNew, uncheck radioUseExisting
+                radioAddNew.setChecked(true);
+                radioUseExisting.setChecked(false);
+
+            }
+        });
+        categoryNameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus) {
+                    //when gains focus, check radioAddNew, uncheck radioUseExisting
+                    radioAddNew.setChecked(true);
+                    radioUseExisting.setChecked(false);
+
+
+                }
+            }
+        });
+        categorySpinner.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                //uncheck radioAddNew, check radioUseExisting, take focus from edit text, make
+                // keyboard disappear
+                if(event.getAction() == MotionEvent.ACTION_UP){
+                    radioAddNew.setChecked(false);
+                    radioUseExisting.setChecked(true);
+                    categoryNameEditText.clearFocus();
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(categoryNameEditText.getWindowToken(), 0);
+                }
+                return false;
+            }
+        });
+
+        //adapter for categorySpinner
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, R.layout.spinner_layout_add_category_dialog){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent){
+
+                View v = super.getView(position, convertView, parent);
+                if (position == getCount()){
+                    ((TextView) v.findViewById(R.id.spinnerLayoutTextView)).setText("");
+
+                    //set the hint for the spinner
+                    ((TextView)v.findViewById(R.id.spinnerLayoutTextView)).setHint(getItem(getCount()));
+                }
+
+                return v;
+            }
+
+            @Override
+            public int getCount(){
+
+                //last item in adapter will be hint, which shouldn't be displayed in drop down
+                return  super.getCount() -1;
+            }
+
+        };
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        //add categories in unusedCategoryList
+        for(int i = 0; i < unusedCategoryList.size(); i++){
+            adapter.add(unusedCategoryList.get(i).getCategoryName());
+        }
+
+        //add hint to end of adapter
+        //adapter.add("Test");
+        if(unusedCategoryList.size() > 0) {
+            adapter.add(MainActivity.this.getResources().getString(R.string.spinnerAddCategoryHint));
+        }else {
+
+            //display no categories if there are none
+            adapter.add("No Categories");
+            adapter.add("No Categories");
+        }
+
+        //set spinner adapter
+        categorySpinner.setAdapter(adapter);
+
+        //set default selection to hint
+        categorySpinner.setSelection(adapter.getCount());
+
+
+
+        // show it
+        alertDialog.show();
+
+
+
     }
 
 

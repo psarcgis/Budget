@@ -206,7 +206,8 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         Timestamp time;
 
-        String selectQuery = "SELECT  * FROM " + Spending.SPENDING_TABLE_NAME;
+        String selectQuery = "SELECT  * FROM " + Spending.SPENDING_TABLE_NAME + " ORDER BY " +
+                Constants.SPENDING_TIMESTAMP_POSITION + " DESC";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
@@ -226,7 +227,8 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         Timestamp time;
 
-        String selectQuery = "SELECT  * FROM " + Earning.EARNING_TABLE_NAME;
+        String selectQuery = "SELECT  * FROM " + Earning.EARNING_TABLE_NAME + " ORDER BY " +
+                Constants.EARNING_TIMESTAMP_POSITION + " DESC";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
@@ -245,6 +247,35 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
     }
 
     public List<String> getAllCategories() {
+        List<String> categoriesList = new ArrayList<String>();
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + Categories.CATEGORIES_TABLE_NAME;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+
+                //1 is the column for category name
+                String category = cursor.getString(1);
+
+
+
+
+
+
+                // Adding contact to list
+                categoriesList.add(category);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        // return contact list
+        return categoriesList;
+    }
+
+    public List<String> getAllCategoriesNotUsed(int budgetID) {
         List<String> categoriesList = new ArrayList<String>();
         // Select All Query
         String selectQuery = "SELECT  * FROM " + Categories.CATEGORIES_TABLE_NAME;
@@ -865,8 +896,15 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         //updating row
         return db.delete(Earning.EARNING_TABLE_NAME, Earning._ID + " = " + earningObj.getID(), null);
+    }
+
+    public int deleteCategory(int categoryID){
+
+        SQLiteDatabase db = this.getWritableDatabase();
 
 
+        //updating row
+        return db.delete(Categories.CATEGORIES_TABLE_NAME, Categories._ID + " = " + categoryID, null);
     }
 
     public double getAllExpenses(int budgetID){
@@ -882,6 +920,33 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         else allExpenses = 0;
 
         return allExpenses;
+
+    }
+
+    //Return a list of CategoryObjs that aren't used in the current budget
+    public List<CategoryObj> getUnusedCategories(int budgetID){
+
+        List<CategoryObj> list = new ArrayList<CategoryObj>();
+        CategoryObj categoryObj = new CategoryObj();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
+        Categories._ID + " NOT IN (SELECT " + Expenses.EXPENSES_CATEGORY_ID + " FROM " +
+        Expenses.EXPENSES_TABLE_NAME + " WHERE NOT " + Expenses.EXPENSES_BUDGET_ID + " = " + budgetID + ")",null);
+
+        if(cursor.moveToFirst()){
+            do {
+
+                Log.d("notused", cursor.getString(Constants.CATEGORIES_ID_POSITION));
+                categoryObj.setID(cursor.getInt(Constants.CATEGORIES_ID_POSITION));
+                categoryObj.setCategoryName(cursor.getString(Constants.CATEGORIES_NAME_POSITION));
+                categoryObj.setDefaultCategory(cursor.getInt(Constants.CATEGORIES_DEFAULT_POSITION));
+
+                list.add(categoryObj);
+            }while (cursor.moveToNext());
+        }
+        return list;
+
+
 
     }
 
