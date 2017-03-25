@@ -40,15 +40,15 @@ public class SwipeViews extends Activity {
 
         setContentView(R.layout.swipe_views_layout);
 
+        //pager allows for swiping between fragments
         mPager = (ViewPager) findViewById(R.id.pager);
         mPagerAdapter = new SwipeViewsPagerAdapter(getFragmentManager());
         mPager.setAdapter(mPagerAdapter);
 
+        //sliding tab class allows for icon to display which fragment we are on
         SlidingTabLayout slide = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
         slide.setViewPager(mPager);
-
     }
-
 
     public class SwipeViewsPagerAdapter extends FragmentStatePagerAdapter {
         public SwipeViewsPagerAdapter(FragmentManager fm) {
@@ -58,25 +58,15 @@ public class SwipeViews extends Activity {
         @Override
         public Fragment getItem(int position) {
 
-
-            Log.d("positionis", "getcurrentitem " + String.valueOf(mPager.getCurrentItem()));
-
-
-
+            //display current budget first, display budget list on view to the right
             switch (position) {
                 case 0:
-                    Log.d("positionIs", "0 " + String.valueOf(mPager.getCurrentItem()));
-
                     return new CurrentBudgetFragment();
                 case 1:
-                    Log.d("positionIs", "1 " + String.valueOf(position));
-
                     return new BudgetListFragment();
                 default:
-                    Log.d("positionIs", "Default " + String.valueOf(position));
                     return null;
             }
-
         }
 
         @Override
@@ -84,38 +74,25 @@ public class SwipeViews extends Activity {
             return NUM_PAGES;
         }
 
+        //icons to be use in slidingTab
         private int[] imageResId={R.drawable.circle_fragment_selector,R.drawable.circle_fragment_selector};
-
-
-
 
         @Override
         public CharSequence getPageTitle(int position) {
 
-
-            //Where title or icons for scroll list are placed
-
-            /*CharSequence[] title = {"Cards", "List", "Search", "aaa", "bbb"};
-            return title[position];
-            */
-
+            //sets up tabStrip icons/text
             Drawable image = getResources().getDrawable(imageResId[position]);
             image.setBounds(0, 0, image.getIntrinsicWidth(), image.getIntrinsicHeight());
             SpannableString sb = new SpannableString(" ");
             ImageSpan imageSpan = new ImageSpan(image, ImageSpan.ALIGN_BOTTOM);
             sb.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             return sb;
-
         }
 
         public int getDrawableId(int position) {
             return imageResId[position];
         }
-
-
     }
-
-
 }
 
 
