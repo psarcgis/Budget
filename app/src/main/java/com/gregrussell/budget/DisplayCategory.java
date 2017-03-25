@@ -144,7 +144,7 @@ public class DisplayCategory extends Activity{
         }
 
         //use myDBHelper to get projected expense and return value
-        String category = myDBHelper.getCategory(categoryID);
+        String category = myDBHelper.getCategory(categoryID).getCategoryName();
         myDBHelper.close();
         return category;
     }

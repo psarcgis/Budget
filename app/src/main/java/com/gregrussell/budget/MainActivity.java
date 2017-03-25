@@ -56,6 +56,7 @@ public class MainActivity extends Activity {
     TextView spent;
     ListView listView;
     FloatingActionButton addCategoryButton;
+    public static String BUDGET_NAME;
     List<CategoryObj> unusedCategoryList = new ArrayList<CategoryObj>();
 
     @Override
@@ -187,7 +188,7 @@ public class MainActivity extends Activity {
                     //use spending
                     recentBudget = myDBHelper.getMostRecentSpending();
                     CURRENT_BUDGET = recentBudget;
-                    myDBHelper.close();
+
 
 
 
@@ -197,7 +198,7 @@ public class MainActivity extends Activity {
                     //use earning
                     recentBudget = myDBHelper.getMostRecentEarning();
                     CURRENT_BUDGET = recentBudget;
-                    myDBHelper.close();
+
 
 
                 }
@@ -209,7 +210,7 @@ public class MainActivity extends Activity {
                     CreateBudget();
                 }else {
                     CURRENT_BUDGET = recentBudget;
-                    myDBHelper.close();
+
 
 
 
@@ -223,7 +224,7 @@ public class MainActivity extends Activity {
 
                 recentBudget = myDBHelper.getMostRecentEarning();
                 CURRENT_BUDGET = recentBudget;
-                myDBHelper.close();
+
 
 
             }
@@ -231,7 +232,7 @@ public class MainActivity extends Activity {
                 //use spending
                 recentBudget = myDBHelper.getMostRecentSpending();
                 CURRENT_BUDGET = recentBudget;
-                myDBHelper.close();
+
 
 
 
@@ -299,10 +300,10 @@ public class MainActivity extends Activity {
 
 
             //set text of textViews
-            budgetName.setText(result[0]);
-            projectedExpenses.setText(result[1]);
-            spent.setText(result[2]);
-            difference.setText(result[3]);
+            budgetName.setText(BUDGET_NAME);
+            projectedExpenses.setText(result[0]);
+            spent.setText(result[1]);
+            difference.setText(result[2]);
             overUnder.setText(ovUn);
 
 
@@ -319,31 +320,8 @@ public class MainActivity extends Activity {
         private String[] populateHeader(){
 
             Log.d("listDataObj", "Entered PopulateHeader, current budget is " + CURRENT_BUDGET);
-
-
-            //open the database
-            myDBHelper = new DataBaseHelperCategory(MainActivity.this);
-
-            try {
-                myDBHelper.createDataBase();
-            } catch (IOException ioe) {
-                throw new Error("Unable to create database");
-
-            }
-
-            try {
-
-                myDBHelper.openDataBase();
-
-            } catch (SQLException sqle) {
-
-                throw sqle;
-
-            }
-
-
             ListDataObj listData = myDBHelper.createListData(CURRENT_BUDGET);
-            myDBHelper.close();
+
 
             //Debug logs to check that all data is in the list
 
@@ -365,7 +343,7 @@ public class MainActivity extends Activity {
             }
 
             //pass data from list to objects
-            String budName = listData.getBudgetName();
+            BUDGET_NAME = listData.getBudgetName();
             allExp = listData.getAllExpenses();
             totSpent = listData.getTotalSpent();
             Log.d("populateheader", "listdata spent is " + listData.getTotalSpent());
@@ -414,7 +392,7 @@ public class MainActivity extends Activity {
 
 
             //String Array to return
-            String[] results = {budName,fmtAllExp,fmtTotSpent,fmtDiff};
+            String[] results = {fmtAllExp,fmtTotSpent,fmtDiff};
             return results;
 
 
@@ -430,6 +408,14 @@ public class MainActivity extends Activity {
         ListViewAdapter adapter;
         ListView listView;
         ListDataObj listData;
+
+        @Override
+        protected void onPreExecute(){
+
+            View listLoadingPanel = findViewById(R.id.listLoadingPanel);
+            listLoadingPanel.setVisibility(View.VISIBLE);
+            addCategoryButton.setVisibility(View.INVISIBLE);
+        }
 
 
         @Override
@@ -486,30 +472,11 @@ public class MainActivity extends Activity {
         private void PopulateList(){
 
             Log.d("listViewAdapter", "PopulateList method is running yay");
-
-            myDBHelper = new DataBaseHelperCategory(MainActivity.this);
-
-            try {
-                myDBHelper.createDataBase();
-            } catch (IOException ioe) {
-                throw new Error("Unable to create database");
-
-            }
-
-            try {
-
-                myDBHelper.openDataBase();
-
-            } catch (SQLException sqle) {
-
-                throw sqle;
-
-            }
-
             listData = myDBHelper.createListData(CURRENT_BUDGET);
-            myDBHelper.close();
 
 
+            CategoryObj c = new CategoryObj(100, "ReNTs", 0);
+            Log.d("uniqueCategory",  String.valueOf(myDBHelper.checkCategoryName(c)));
 
             //set listview adapter
             View view = findViewById(R.id.listViewFrame);
@@ -520,12 +487,12 @@ public class MainActivity extends Activity {
 
     private void addCategory(){
 
-        /**Bring up dialog
-         * allow user to pick from already created category that's not being used
+        /**Bring up dialog x
+         * allow user to pick from already created category that's not being used x
          * or
-         * name new category - MUST ENTER A NAME
-         * decide if category will become a default - not default by default
-         * allow user to enter projected expense for category - $0.00 by default
+         * name new category - MUST ENTER A NAME x
+         * decide if category will become a default - not default by default x
+         * expense $0.00 by default
          *
          */
 
@@ -536,10 +503,6 @@ public class MainActivity extends Activity {
         final RadioButton radioAddNew = (RadioButton)addCategoryDialog.findViewById(R.id.radioAddNewAddCategoryDialog);
         final Spinner categorySpinner = (Spinner)addCategoryDialog.findViewById(R.id.spinnerAddCategoryDialog);
         final EditText categoryNameEditText = (EditText)addCategoryDialog.findViewById(R.id.editTextNameAddCategoryDialog);
-
-
-
-
 
         //create a dialog box to add new category
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -558,7 +521,15 @@ public class MainActivity extends Activity {
                                     addCategory();
                                 }else
                                 if(String.valueOf(categoryNameEditText.getText()).equals("")){
-                                    addCategory();
+                                    new AlertDialog.Builder(MainActivity.this)
+                                            .setTitle("Invalid Category Name")
+                                            .setMessage("Must enter a name for the new category.")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    addCategory();
+                                                }
+                                            })
+                                            .show();
                                 }else{
                                     if(radioAddNew.isChecked()) {
                                         CategoryObj categoryObj = new CategoryObj();
@@ -568,14 +539,12 @@ public class MainActivity extends Activity {
                                         } else isDefault = 0;
                                         categoryObj.setCategoryName(String.valueOf(categoryNameEditText.getText()));
                                         categoryObj.setDefaultCategory(isDefault);
-                                        //AsyncAddNewCategory
+                                        AsyncAddNewCategory addNewCategoryTask = new AsyncAddNewCategory();
+                                        addNewCategoryTask.execute(categoryObj);
                                     }else{
                                         //AsyncAddExistingCategory
                                     }
                                 }
-
-
-
                             }
 
 
@@ -597,7 +566,6 @@ public class MainActivity extends Activity {
             categorySpinner.setEnabled(false);
             radioAddNew.setChecked(true);
         }
-
 
         //setting what happens on click of radio buttons, spinner, and edit text
         radioAddNew.setOnClickListener(new View.OnClickListener() {
@@ -633,7 +601,6 @@ public class MainActivity extends Activity {
                 //check radioAddNew, uncheck radioUseExisting
                 radioAddNew.setChecked(true);
                 radioUseExisting.setChecked(false);
-
             }
         });
         categoryNameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -643,8 +610,6 @@ public class MainActivity extends Activity {
                     //when gains focus, check radioAddNew, uncheck radioUseExisting
                     radioAddNew.setChecked(true);
                     radioUseExisting.setChecked(false);
-
-
                 }
             }
         });
@@ -677,7 +642,6 @@ public class MainActivity extends Activity {
                     //set the hint for the spinner
                     ((TextView)v.findViewById(R.id.spinnerLayoutTextView)).setHint(getItem(getCount()));
                 }
-
                 return v;
             }
 
@@ -687,7 +651,6 @@ public class MainActivity extends Activity {
                 //last item in adapter will be hint, which shouldn't be displayed in drop down
                 return  super.getCount() -1;
             }
-
         };
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -714,13 +677,64 @@ public class MainActivity extends Activity {
         //set default selection to hint
         categorySpinner.setSelection(adapter.getCount());
 
-
-
         // show it
         alertDialog.show();
+    }
+
+    private class AsyncAddNewCategory extends AsyncTask<CategoryObj, Void, Boolean>{
 
 
+        @Override
+        protected Boolean doInBackground(CategoryObj... params) {
 
+            CategoryObj categoryObj = params[0];
+            /*add category to category table
+            add category to expense table with expenses of 0.00
+            reload the category list view
+             */
+
+            //if name is unique, proceed
+            if(myDBHelper.checkCategoryName(categoryObj)){
+
+                //proceed
+
+                CategoryObj newCategoryObj = myDBHelper.addCategory(categoryObj);
+                myDBHelper.addNewCategoryExpense(CURRENT_BUDGET, BUDGET_NAME, newCategoryObj);
+
+                return true;
+            }else{
+                return false;
+            }
+        }
+        @Override
+        protected void onPostExecute(Boolean result){
+
+            if(!result){
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Invalid Category Name")
+                        .setMessage("The category name entered already exists. Please enter a unique name.")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                addCategory();
+                            }
+                        })
+                        .show();
+            }else {
+                AsyncLoadList loadList = new AsyncLoadList();
+                loadList.execute();
+            }
+        }
+
+
+    }
+
+    private class AsyncAddExistingCategory extends AsyncTask<CategoryObj, Void, Boolean>{
+
+
+        @Override
+        protected Boolean doInBackground(CategoryObj... params) {
+            return null;
+        }
     }
 
 

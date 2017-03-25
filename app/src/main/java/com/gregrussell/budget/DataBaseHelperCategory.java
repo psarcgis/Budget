@@ -179,25 +179,40 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
     }
 
 
-    public void addCategory(String category, Boolean isDefault) {
-        String no = null;
+    public CategoryObj addCategory(CategoryObj categoryObj) {
+
         SQLiteDatabase db = this.getWritableDatabase();
 
+        //check category name hasn't already been used
+
         ContentValues values = new ContentValues();
-        values.put(Categories.CATEGORIES_CATEGORY, category);
-        if (isDefault){
-            values.put(Categories.CATEGORIES_DEFAULT, 1);
-        }
-        else {
-            values.put(Categories.CATEGORIES_DEFAULT, 0);
-        }
+        values.put(Categories.CATEGORIES_CATEGORY, categoryObj.getCategoryName());
+        values.put(Categories.CATEGORIES_DEFAULT, categoryObj.getDefaultCategory());
 
 
         // Inserting Row
-        db.insert(Categories.CATEGORIES_TABLE_NAME, null, values);
+        long rowID = db.insert(Categories.CATEGORIES_TABLE_NAME, null, values);
+        return getCategory((int)rowID);
 
-        //Log.d("row inserted " , "new row id is " + Long.toString(db.insert(Categories.TABLE_NAME, null, values)));
-        db.close(); // Closing database connection
+    }
+
+    public boolean checkCategoryName(CategoryObj categoryObj){
+
+        boolean uniqueName;
+        String newCategory = categoryObj.getCategoryName();
+        String categoryInDB = "";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME +
+        " WHERE " + Categories.CATEGORIES_CATEGORY + " LIKE " + "'" + newCategory + "'", null);
+        if(cursor.moveToFirst()){
+            categoryInDB = cursor.getString(Constants.CATEGORIES_NAME_POSITION);
+        }
+        cursor.close();
+        if(categoryObj.getCategoryName().toUpperCase().equals(categoryInDB.toUpperCase())){
+            uniqueName = false;
+        }else uniqueName = true;
+        return uniqueName;
+
     }
 
 
@@ -214,10 +229,14 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         cursor.moveToFirst();
         try {
             Log.d("Most Recent", cursor.getString(Constants.SPENDING_TIMESTAMP_POSITION));
-            return Timestamp.valueOf(cursor.getString(Constants.SPENDING_TIMESTAMP_POSITION));
+            time = Timestamp.valueOf(cursor.getString(Constants.SPENDING_TIMESTAMP_POSITION));
+            cursor.close();
+            return time;
+
+
         }
         catch (Exception e){
-
+            cursor.close();
             return null;
         }
     }
@@ -235,10 +254,12 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         cursor.moveToFirst();
         try {
             Log.d("Most Recent", cursor.getString(Constants.EARNING_TIMESTAMP_POSITION));
-            return Timestamp.valueOf(cursor.getString(Constants.EARNING_TIMESTAMP_POSITION));
+            time = Timestamp.valueOf(cursor.getString(Constants.EARNING_TIMESTAMP_POSITION));
+            cursor.close();
+            return time;
         }
         catch (Exception e){
-
+            cursor.close();
             return null;
         }
 
@@ -405,15 +426,8 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
             }while (cursor.moveToNext());
 
-
         }
-
-
-
-
-
-
-
+        cursor.close();
     }
 
 
@@ -421,6 +435,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
     public int getMostRecentSpending(){
 
+        int budget;
         String selectQuery = "SELECT  * FROM " + Spending.SPENDING_TABLE_NAME +
                 " ORDER BY " + Spending.SPENDING_TIMESTAMP + " DESC";
 
@@ -430,13 +445,19 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         if (cursor.moveToFirst()) {
             //if there are no entries, cursor will come back null
             try {
-                return cursor.getInt(Constants.SPENDING_BUDGET_ID_POSITION);
+                budget = cursor.getInt(Constants.SPENDING_BUDGET_ID_POSITION);
+                cursor.close();
+                return budget;
             } catch (Exception e) {
 
+                cursor.close();
                 return -1;
             }
         }
-        else return -1;
+        else{
+            cursor.close();
+            return -1;
+        }
 
     }
 
@@ -451,13 +472,19 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         if (cursor.moveToFirst()) {
             //if there are no entries, cursor will come back null
             try {
-                return cursor.getInt(Constants.EARNING_BUDGET_ID_POSITION);
+                int budget = cursor.getInt(Constants.EARNING_BUDGET_ID_POSITION);
+                cursor.close();
+                return budget;
             } catch (Exception e) {
 
+                cursor.close();
                 return -1;
             }
         }
-        else return -1;
+        else {
+            cursor.close();
+            return -1;
+        }
 
     }
 
@@ -478,10 +505,13 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         //if there are no entries, cursor will come back null
         try {
             Log.d("MostRecentBudget", "most recent budgetID is " + cursor.getInt(Constants.BUDGETS_ID_POSITION));
-            return cursor.getInt(Constants.BUDGETS_ID_POSITION);
+            int budget = cursor.getInt(Constants.BUDGETS_ID_POSITION);
+            cursor.close();
+            return budget;
         }
         catch (Exception e){
 
+            cursor.close();
             return -1;
         }
 
@@ -524,6 +554,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
 
         }
+        cursor.close();
         //Log.d("list size dbh", Integer.toString(spendingList.size()));
         Log.d("list size dbh", Integer.toString(i));
 
@@ -617,6 +648,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         ldo.setExpenseList(expensesList);
         ldo.setSpentList(spentList);
 
+        cursor.close();
         return ldo;
     }
 
@@ -656,6 +688,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         }
 
+        cursor.close();
         return spentList;
 
 
@@ -683,6 +716,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         }else projectedExpense = null;
 
+        cursor.close();
         return projectedExpense;
     }
 
@@ -700,22 +734,26 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
             spentAmount = cursor.getDouble(0);
         }else spentAmount = 0.0;
 
+        cursor.close();
         return spentAmount;
 
     }
 
     //returns category name when given categoryID
-    public String getCategory(int categoryID){
+    public CategoryObj getCategory(int categoryID){
 
-        String category;
+        CategoryObj category = new CategoryObj();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
         Categories._ID + " = " + categoryID, null);
 
         if(cursor.moveToFirst()){
-            category = cursor.getString(Constants.CATEGORIES_NAME_POSITION);
-        }else category = "";
+            category.setID(cursor.getInt(Constants.CATEGORIES_ID_POSITION));
+            category.setCategoryName(cursor.getString(Constants.CATEGORIES_NAME_POSITION));
+            category.setDefaultCategory(cursor.getInt(Constants.CATEGORIES_DEFAULT_POSITION));
+        }
+        cursor.close();
         return category;
     }
 
@@ -738,7 +776,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
             projectedIncome.setIncome(cursor.getDouble(Constants.INCOME_ESTIMATE_POSITION));
         }else projectedIncome = null;
 
-
+        cursor.close();
         return projectedIncome;
     }
 
@@ -755,6 +793,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
             spentAmount = cursor.getDouble(0);
         }else spentAmount = 0.0;
 
+        cursor.close();
         return spentAmount;
 
     }
@@ -785,6 +824,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         }
 
+        cursor.close();
         return earningObjList;
 
     }
@@ -796,6 +836,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         List<CategoryObj> categoryObjList = new ArrayList<CategoryObj>();
 
         SQLiteDatabase db = this.getReadableDatabase();
+
         Cursor cursor;
 
         for (int i = 0; i < categoryIDList.size(); i++) {
@@ -810,6 +851,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
                 categoryObjList.add(category);
             }
+            cursor.close();
         }
 
         return categoryObjList;
@@ -893,7 +935,6 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-
         //updating row
         return db.delete(Earning.EARNING_TABLE_NAME, Earning._ID + " = " + earningObj.getID(), null);
     }
@@ -918,7 +959,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
             allExpenses = cursor.getDouble(0);
         }
         else allExpenses = 0;
-
+        cursor.close();
         return allExpenses;
 
     }
@@ -944,10 +985,22 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
                 list.add(categoryObj);
             }while (cursor.moveToNext());
         }
+        cursor.close();
         return list;
 
 
 
+    }
+
+    public void addNewCategoryExpense(int budgetID, String budgetName, CategoryObj categoryObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Expenses.EXPENSES_BUDGET_ID, budgetID);
+        values.put(Expenses.EXPENSES_BUDGET_NAME, budgetName);
+        values.put(Expenses.EXPENSES_CATEGORY_ID, categoryObj.getID());
+        values.put(Expenses.EXPENSES_CATEGORY_NAME, categoryObj.getCategoryName());
+        db.insert(Expenses.EXPENSES_TABLE_NAME,null,values);
     }
 
 
@@ -980,7 +1033,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
     public static class Categories implements BaseColumns {
         public static final String CATEGORIES_TABLE_NAME = "Categories";
-        public static final String CATEGORIES_CATEGORY = "Categories";
+        public static final String CATEGORIES_CATEGORY = "Category";
         public static final String CATEGORIES_DEFAULT = "IsDefault";
     }
 
