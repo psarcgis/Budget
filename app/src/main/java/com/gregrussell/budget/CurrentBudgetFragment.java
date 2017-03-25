@@ -55,7 +55,6 @@ public class CurrentBudgetFragment extends Fragment {
     List<CategoryObj> unusedCategoryList = new ArrayList<CategoryObj>();
     ViewGroup rootView;
 
-
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 

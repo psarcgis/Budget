@@ -1003,6 +1003,90 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         db.insert(Expenses.EXPENSES_TABLE_NAME,null,values);
     }
 
+    public List<BudgetListItemObj> getAllBudgetsList(){
+
+        //get all budgets from budgets from budgets table X
+        //get sum of expenses using budgets from budgets table X
+        //get sum of spending using budgets from budgets table X
+        //compile lists into list of budgetListItemObjs
+        List<BudgetListItemObj> budgetListItemObjList = new ArrayList<BudgetListItemObj>();
+        List<BudgetObj> budgetObjList = getAllBudgets();
+        List<Double> budgetExpenseList = listOfBudgetExpenses(budgetObjList);
+        List<Double> budgetSpendingList = listOfBudgetSpending(budgetObjList);
+
+        if(budgetObjList.size() == budgetExpenseList.size() && budgetObjList.size() == budgetSpendingList.size()){
+            for(int i =0; i<budgetObjList.size();i++){
+                BudgetListItemObj budgetListItemObj = new BudgetListItemObj(budgetObjList.get(i).getID(),
+                        budgetObjList.get(i).getBudgetName(),budgetExpenseList.get(i),
+                        budgetSpendingList.get(i));
+                budgetListItemObjList.add(budgetListItemObj);
+            }
+
+        }else{
+            //something went wrong
+            Log.e("getAllBudgetsList", "Something went wrong");
+        }
+        return budgetListItemObjList;
+    }
+
+
+    //get all budgets from budget table and return as list of budgetObjs
+    public List<BudgetObj> getAllBudgets(){
+
+        List<BudgetObj> budgetObjList = new ArrayList<BudgetObj>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Budgets.BUDGETS_TABLE_NAME,null);
+        if(cursor.moveToFirst()){
+            do{
+                BudgetObj budgetObj = new BudgetObj(cursor.getInt(Constants.BUDGETS_ID_POSITION),
+                        Timestamp.valueOf(cursor.getString(Constants.BUDGETS_TIMESTAMP_POSITION)),
+                        cursor.getString(Constants.BUDGETS_NAME_POSITION));
+                budgetObjList.add(budgetObj);
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
+        return budgetObjList;
+    }
+
+
+    //get total expenses for each budget and return as list
+    public List<Double> listOfBudgetExpenses(List<BudgetObj> budgetObjList){
+
+        List<Double> budgetExpenseList = new ArrayList<Double>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        //for loop to move through all budgets
+        for(int i = 0; i < budgetObjList.size(); i++){
+            Cursor cursor = db.rawQuery("SELECT SUM(" + Expenses.EXPENSES_ESTIMATE + ") FROM " +
+                    Expenses.EXPENSES_TABLE_NAME + " WHERE " + Expenses.EXPENSES_BUDGET_ID + " = " +
+                    budgetObjList.get(0).getID(),null);
+            if(cursor.moveToFirst()){
+                budgetExpenseList.add(cursor.getDouble(0));
+            }else budgetExpenseList.add(0.00);
+            cursor.close();
+        }
+        return budgetExpenseList;
+    }
+
+    //get total spent for each budget and return as list
+    public List<Double> listOfBudgetSpending(List<BudgetObj> budgetObjList){
+
+        List<Double> budgetSpendingList = new ArrayList<Double>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        //for loop to move through all budgets
+        for(int i = 0; i < budgetObjList.size(); i++){
+            Cursor cursor = db.rawQuery("SELECT SUM(" + Spending.SPENDING_SPENT + ") FROM " +
+                    Spending.SPENDING_TABLE_NAME + " WHERE " + Spending.SPENDING_BUDGET_ID + " = " +
+                    budgetObjList.get(0).getID(),null);
+            if(cursor.moveToFirst()){
+                budgetSpendingList.add(cursor.getDouble(0));
+            }else budgetSpendingList.add(0.00);
+            cursor.close();
+        }
+        return budgetSpendingList;
+    }
+
 
 
 
