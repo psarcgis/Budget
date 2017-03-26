@@ -1,11 +1,10 @@
 package com.gregrussell.budget;
 
-import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.SQLException;
-import android.graphics.Color;
 import android.graphics.LightingColorFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,53 +15,54 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
-import java.util.StringTokenizer;
 
+/**
+ * Created by greg on 3/24/2017.
+ */
 
-public class MainActivity extends Activity {
+public class CurrentBudgetFragment extends Fragment {
 
-
+    Context context;
     DataBaseHelperCategory myDBHelper;
     public static int CURRENT_BUDGET;
     public static final String EXTRA_MESSAGE_TO_DISPLAY_CATEGORY = "com.gregrussell.budget.EXTRA_INTENT_TO_DISPLAY_CATEGORY";
-    View container;
-    TextView difference;
-    TextView overUnder;
-    TextView budgetName;
-    TextView projectedExpenses;
-    TextView spent;
-    ListView listView;
+    public static View containerLayout;
+    public static TextView difference;
+    public static TextView overUnder;
+    public static TextView budgetName;
+    public static TextView projectedExpenses;
+    public static TextView spent;
+    public static ListView listView;
+    public static ListViewAdapter adapter;
     FloatingActionButton addCategoryButton;
     public static String BUDGET_NAME;
-    List<CategoryObj> unusedCategoryList = new ArrayList<CategoryObj>();
+    public static List<CategoryObj> unusedCategoryList = new ArrayList<CategoryObj>();
+    ViewGroup rootView;
+    int spinnerPosition;
 
     @Override
-    protected void onResume(){
+    public void onResume(){
 
         super.onResume();
+        Log.d("currentbudget onresume", "on resume");
         AsyncLoadHeader loadHeader = new AsyncLoadHeader();
         loadHeader.execute();
 
@@ -71,34 +71,31 @@ public class MainActivity extends Activity {
 
     }
 
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+        context = getActivity();
 
-
-
+        rootView = (ViewGroup)inflater.inflate(R.layout.activity_main, container, false);
 
 
 
         //initializing views
-        container = findViewById(R.id.container);
-        difference = (TextView)findViewById(R.id.difference);
-        overUnder = (TextView)findViewById(R.id.overUnder);
-        budgetName = (TextView)findViewById(R.id.budgetName);
-        projectedExpenses = (TextView)findViewById(R.id.projectedValue);
-        spent = (TextView)findViewById(R.id.spentValue);
-        addCategoryButton = (FloatingActionButton)findViewById(R.id.addMainActivity);
+        containerLayout = rootView.findViewById(R.id.container);
+        difference = (TextView)rootView.findViewById(R.id.difference);
+        overUnder = (TextView)rootView.findViewById(R.id.overUnder);
+        budgetName = (TextView)rootView.findViewById(R.id.budgetName);
+        projectedExpenses = (TextView)rootView.findViewById(R.id.projectedValue);
+        spent = (TextView)rootView.findViewById(R.id.spentValue);
+        addCategoryButton = (FloatingActionButton)rootView.findViewById(R.id.addMainActivity);
         addCategoryButton.setVisibility(View.INVISIBLE);
 
         //setting color for header progress bar
-        ProgressBar headerProgress = (ProgressBar) findViewById(R.id.headerProgress);
+        ProgressBar headerProgress = (ProgressBar) rootView.findViewById(R.id.headerProgress);
         headerProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorPrimary)));
 
         //setting color for list progress bar
-        ProgressBar listProgress = (ProgressBar) findViewById(R.id.listProgress);
+        ProgressBar listProgress = (ProgressBar) rootView.findViewById(R.id.listProgress);
         listProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorPrimary)));
 
         //starting each task on a background thread
@@ -119,13 +116,13 @@ public class MainActivity extends Activity {
             }
         });
 
-
+        return rootView;
     }
 
 
 
 
-    private class AsyncLoadBudget extends AsyncTask<Void,Void, Boolean>{
+    private class AsyncLoadBudget extends AsyncTask<Void,Void, Boolean> {
 
 
 
@@ -153,7 +150,7 @@ public class MainActivity extends Activity {
 
             int recentBudget;
 
-            myDBHelper = new DataBaseHelperCategory(MainActivity.this);
+            myDBHelper = new DataBaseHelperCategory(context);
 
             try {
                 myDBHelper.createDataBase();
@@ -172,84 +169,41 @@ public class MainActivity extends Activity {
 
             }
 
+
+            //myDBHelper.checkCategoryName(categoryObj);
+
             //myDBHelper.addCategory("Dating", false);
+
+
+
+
+            recentBudget = myDBHelper.getMostRecentBudget();
+            if(recentBudget == -1){
+                createBudget();
+            }else {
+                CURRENT_BUDGET = recentBudget;
+                Calendar c = Calendar.getInstance();
+                Timestamp time = new Timestamp(c.getTime().getTime());
+                myDBHelper.updateBudgetTimestamp(CURRENT_BUDGET,time);
+
+            }
+            unusedCategoryList.clear();
             unusedCategoryList = myDBHelper.getUnusedCategories(CURRENT_BUDGET);
             for(int i =0; i < unusedCategoryList.size(); i++){
-                Log.d("allCategoriesNotUsed", unusedCategoryList.get(i).getCategoryName());
+                Log.d("allCategoriesNotUsed CB", unusedCategoryList.get(i).getCategoryName());
             }
 
-            Timestamp spendingTime = myDBHelper.getSpendingTimestamp();
-            Timestamp earningTime = myDBHelper.getEarningTimestamp();
-
-            if(spendingTime != null && earningTime != null) {
-
-                if (spendingTime.after(earningTime)) {
-
-                    //use spending
-                    recentBudget = myDBHelper.getMostRecentSpending();
-                    CURRENT_BUDGET = recentBudget;
 
 
 
 
-
-                } else {
-
-                    //use earning
-                    recentBudget = myDBHelper.getMostRecentEarning();
-                    CURRENT_BUDGET = recentBudget;
-
-
-
-                }
-
-            }else if(spendingTime == null && earningTime == null){
-
-                recentBudget = myDBHelper.getMostRecentBudget();
-                if(recentBudget == -1){
-                    CreateBudget();
-                }else {
-                    CURRENT_BUDGET = recentBudget;
-
-
-
-
-                }
-
-
-            }else if(spendingTime == null) {
-                Log.d("Most Recent STimestamp", "null");
-                Log.d("Most Recent ETimestamp", earningTime.toString());
-                //use earning
-
-                recentBudget = myDBHelper.getMostRecentEarning();
-                CURRENT_BUDGET = recentBudget;
-
-
-
-            }
-            else{
-                //use spending
-                recentBudget = myDBHelper.getMostRecentSpending();
-                CURRENT_BUDGET = recentBudget;
-
-
-
-
-                Log.d("Most Recent Timestamp", spendingTime.toString());
-            }
         }
 
-        private void CreateBudget(){
+        private void createBudget(){
 
-
-            Log.d("CreateBudget", "Entered Create Budget");
+            Log.d("createBudget", "Entered Create Budget");
             myDBHelper.addBudget("March 2017");
             LoadBudget();
-
-
-
-
         }
 
 
@@ -281,19 +235,20 @@ public class MainActivity extends Activity {
 
 
 
+
             //round because double doesn't know how to math
             double roundTotSpent = Math.round(totSpent *100.0)/100.0;
             double roundAllExp = Math.round(allExp *100.0)/100.0;
 
             if(roundTotSpent < roundAllExp){
                 ovUn = "Under";
-                container.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
-                container.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             }else {
                 ovUn = "Over";
-                container.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
             }
 
 
@@ -310,7 +265,7 @@ public class MainActivity extends Activity {
 
 
             //progress bar is visible by default. Turn invisible once loading is complete
-            View headerLoadingPanel = findViewById(R.id.headerLoadingPanel);
+            View headerLoadingPanel = rootView.findViewById(R.id.headerLoadingPanel);
             headerLoadingPanel.setVisibility(View.INVISIBLE);
 
 
@@ -405,14 +360,13 @@ public class MainActivity extends Activity {
     private class AsyncLoadList extends AsyncTask<Void,Void,Boolean>{
 
 
-        ListViewAdapter adapter;
-        ListView listView;
+
         ListDataObj listData;
 
         @Override
         protected void onPreExecute(){
 
-            View listLoadingPanel = findViewById(R.id.listLoadingPanel);
+            View listLoadingPanel = rootView.findViewById(R.id.listLoadingPanel);
             listLoadingPanel.setVisibility(View.VISIBLE);
             addCategoryButton.setVisibility(View.INVISIBLE);
         }
@@ -430,7 +384,7 @@ public class MainActivity extends Activity {
         @Override
         protected void onPostExecute(Boolean result){
             //progress bar is visible by default. Turn invisible once loading is complete
-            View listLoadingPanel = findViewById(R.id.listLoadingPanel);
+            View listLoadingPanel = rootView.findViewById(R.id.listLoadingPanel);
             listLoadingPanel.setVisibility(View.INVISIBLE);
             addCategoryButton.setVisibility(View.VISIBLE);
 
@@ -450,12 +404,12 @@ public class MainActivity extends Activity {
                     //must check if first position, income category handled differently
                     if(position == 0){
                         //income category has been selected
-                        Intent intent = new Intent(MainActivity.this, DisplayIncome.class);
+                        Intent intent = new Intent(context, DisplayIncome.class);
                         startActivity(intent);
 
                     }else{
                         //an expense category has been selected
-                        Intent intent = new Intent(MainActivity.this, DisplayCategory.class);
+                        Intent intent = new Intent(context, DisplayCategory.class);
                         intent.putExtra(EXTRA_MESSAGE_TO_DISPLAY_CATEGORY, category);
                         startActivity(intent);
                     }
@@ -479,9 +433,9 @@ public class MainActivity extends Activity {
             Log.d("uniqueCategory",  String.valueOf(myDBHelper.checkCategoryName(c)));
 
             //set listview adapter
-            View view = findViewById(R.id.listViewFrame);
+            View view = rootView.findViewById(R.id.listViewFrame);
             listView = (ListView)view.findViewById(R.id.listView);
-            adapter = new ListViewAdapter(MainActivity.this,listData);
+            adapter = new ListViewAdapter(context,listData);
         }
     }
 
@@ -496,7 +450,7 @@ public class MainActivity extends Activity {
          *
          */
 
-        LayoutInflater inflater = getLayoutInflater();
+        LayoutInflater inflater = getActivity().getLayoutInflater();
         final View addCategoryDialog = inflater.inflate(R.layout.add_category_dialog_layout,null);
         final CheckBox checkBox = (CheckBox)addCategoryDialog.findViewById(R.id.checkBoxAddCategoryDialog);
         final RadioButton radioUseExisting = (RadioButton)addCategoryDialog.findViewById(R.id.radioUseExistingAddCategoryDialog);
@@ -504,8 +458,9 @@ public class MainActivity extends Activity {
         final Spinner categorySpinner = (Spinner)addCategoryDialog.findViewById(R.id.spinnerAddCategoryDialog);
         final EditText categoryNameEditText = (EditText)addCategoryDialog.findViewById(R.id.editTextNameAddCategoryDialog);
 
+
         //create a dialog box to add new category
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
         //set the layout the dialog uses
         alertDialogBuilder.setView(addCategoryDialog);
@@ -517,35 +472,61 @@ public class MainActivity extends Activity {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
+                                Log.d("spinnerPosition", String.valueOf(spinnerPosition));
                                 if(!radioAddNew.isChecked() && !radioUseExisting.isChecked()){
-                                    addCategory();
-                                }else
-                                if(String.valueOf(categoryNameEditText.getText()).equals("")){
-                                    new AlertDialog.Builder(MainActivity.this)
+                                    new AlertDialog.Builder(context)
                                             .setTitle("Invalid Category Name")
-                                            .setMessage("Must enter a name for the new category.")
+                                            .setMessage("Must select or enter a name for the new category.")
                                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     addCategory();
                                                 }
                                             })
                                             .show();
-                                }else{
-                                    if(radioAddNew.isChecked()) {
+                                }else
+                                if(radioAddNew.isChecked() && String.valueOf(categoryNameEditText.getText()).trim().isEmpty()){
+                                    new AlertDialog.Builder(context)
+                                            .setTitle("Invalid Category Name")
+                                            .setMessage("Must select or enter a name for the new category.")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    addCategory();
+                                                }
+                                            })
+                                            .show();
+                                }else if(radioAddNew.isChecked()) {
                                         CategoryObj categoryObj = new CategoryObj();
                                         int isDefault;
                                         if (checkBox.isChecked()) {
                                             isDefault = 1;
                                         } else isDefault = 0;
-                                        categoryObj.setCategoryName(String.valueOf(categoryNameEditText.getText()));
+                                        categoryObj.setCategoryName(String.valueOf(categoryNameEditText.getText()).trim());
                                         categoryObj.setDefaultCategory(isDefault);
                                         AsyncAddNewCategory addNewCategoryTask = new AsyncAddNewCategory();
                                         addNewCategoryTask.execute(categoryObj);
-                                    }else{
-                                        //AsyncAddExistingCategory
+                                    }else if(spinnerPosition >= unusedCategoryList.size()){
+                                    new AlertDialog.Builder(context)
+                                            .setTitle("Invalid Category Name")
+                                            .setMessage("Must select or enter a name for the new category.")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    addCategory();
+                                                }
+                                            })
+                                            .show();
+                                    }else {
+                                    CategoryObj categoryObj = unusedCategoryList.get(spinnerPosition);
+                                    int isDefault;
+                                    if (checkBox.isChecked()) {
+                                        isDefault = 1;
+                                    } else isDefault = 0;
+                                    categoryObj.setDefaultCategory(isDefault);
+                                    Log.d("existingCategory", categoryObj.getCategoryName());
+                                    AsyncAddExistingCategory addExistingCategory = new AsyncAddExistingCategory();
+                                    addExistingCategory.execute(categoryObj);
                                     }
                                 }
-                            }
+
 
 
                         })
@@ -577,7 +558,7 @@ public class MainActivity extends Activity {
                 radioAddNew.setChecked(true);
                 radioUseExisting.setChecked(false);
                 categoryNameEditText.requestFocus();
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT,0);
             }
         });
@@ -590,7 +571,7 @@ public class MainActivity extends Activity {
                 radioAddNew.setChecked(false);
                 radioUseExisting.setChecked(true);
                 categoryNameEditText.clearFocus();
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(categoryNameEditText.getWindowToken(), 0);
             }
         });
@@ -623,7 +604,7 @@ public class MainActivity extends Activity {
                     radioAddNew.setChecked(false);
                     radioUseExisting.setChecked(true);
                     categoryNameEditText.clearFocus();
-                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(categoryNameEditText.getWindowToken(), 0);
                 }
                 return false;
@@ -631,7 +612,7 @@ public class MainActivity extends Activity {
         });
 
         //adapter for categorySpinner
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, R.layout.spinner_layout_add_category_dialog){
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(context, R.layout.spinner_layout_add_category_dialog){
             @Override
             public View getView(int position, View convertView, ViewGroup parent){
 
@@ -645,6 +626,7 @@ public class MainActivity extends Activity {
                 return v;
             }
 
+
             @Override
             public int getCount(){
 
@@ -653,29 +635,43 @@ public class MainActivity extends Activity {
             }
         };
 
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         //add categories in unusedCategoryList
         for(int i = 0; i < unusedCategoryList.size(); i++){
-            adapter.add(unusedCategoryList.get(i).getCategoryName());
+            spinnerAdapter.add(unusedCategoryList.get(i).getCategoryName());
         }
 
         //add hint to end of adapter
         //adapter.add("Test");
         if(unusedCategoryList.size() > 0) {
-            adapter.add(MainActivity.this.getResources().getString(R.string.spinnerAddCategoryHint));
+            spinnerAdapter.add(this.getResources().getString(R.string.spinnerAddCategoryHint));
         }else {
 
             //display no categories if there are none
-            adapter.add("No Categories");
-            adapter.add("No Categories");
+            spinnerAdapter.add("No Categories");
+            spinnerAdapter.add("No Categories");
         }
 
         //set spinner adapter
-        categorySpinner.setAdapter(adapter);
+        categorySpinner.setAdapter(spinnerAdapter);
 
         //set default selection to hint
-        categorySpinner.setSelection(adapter.getCount());
+        categorySpinner.setSelection(spinnerAdapter.getCount());
+
+        //onItemSelectListener for spinner
+        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                spinnerPosition = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
 
         // show it
         alertDialog.show();
@@ -710,7 +706,7 @@ public class MainActivity extends Activity {
         protected void onPostExecute(Boolean result){
 
             if(!result){
-                new AlertDialog.Builder(MainActivity.this)
+                new AlertDialog.Builder(context)
                         .setTitle("Invalid Category Name")
                         .setMessage("The category name entered already exists. Please enter a unique name.")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -733,9 +729,25 @@ public class MainActivity extends Activity {
 
         @Override
         protected Boolean doInBackground(CategoryObj... params) {
+
+            CategoryObj categoryObj = params[0];
+            Log.d("currentBudget add exist", BUDGET_NAME + " " + CURRENT_BUDGET);
+            myDBHelper.addNewCategoryExpense(CURRENT_BUDGET, BUDGET_NAME, categoryObj);
             return null;
         }
+
+        @Override
+        protected void onPostExecute(Boolean result){
+
+            AsyncLoadBudget loadBudget = new AsyncLoadBudget();
+            loadBudget.execute();
+            AsyncLoadList loadList = new AsyncLoadList();
+            loadList.execute();
+        }
+
+
     }
+
 
 
 

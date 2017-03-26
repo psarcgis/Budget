@@ -12,7 +12,7 @@ public class CategoryObj {
 
     int _ID;
     String _CategoryName;
-    int _DefaultCategory;
+    int _DefaultCategory; //1 is default, 0 is not default
 
     public CategoryObj() {
 

@@ -15,25 +15,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by greg on 3/11/2017.
+ * Created by greg on 3/25/2017.
  */
 
-public class ListViewAdapter extends BaseAdapter{
+public class ListViewAdapterAllBudgets extends BaseAdapter {
 
-    ListDataObj ldo = new ListDataObj();
+    List<BudgetListItemObj> budgetListItemList = new ArrayList<BudgetListItemObj>();
 
     private LayoutInflater inflater;
     Context context;
 
 
-    public ListViewAdapter(Context context, ListDataObj ldo){
+    public ListViewAdapterAllBudgets(Context context, List<BudgetListItemObj> budgetListItemList){
 
-        Log.d("listViewAdapter", "List view adapter class has run");
+        Log.d("listViewAdapterAll", "List view adapter class has run " + budgetListItemList.size() );
 
         this.context = context;
 
-        this.ldo = ldo;
+        this.budgetListItemList = budgetListItemList;
         inflater = ((Activity)context).getLayoutInflater();
+
 
 
     }
@@ -41,7 +42,7 @@ public class ListViewAdapter extends BaseAdapter{
 
     @Override
     public int getCount() {
-        return ldo.getCategoryList().size();
+        return budgetListItemList.size();
     }
 
     @Override
@@ -58,20 +59,14 @@ public class ListViewAdapter extends BaseAdapter{
     public View getView(int position, View convertView, ViewGroup parent) {
 
 
-        Log.d("listViewAdapter", "List view adapter getView method");
+        Log.d("listViewAdapterAll", "List view adapter getView method");
         View currentView = convertView;
         if(currentView == null){
             currentView = inflater.inflate(R.layout.list_item_layout,parent,false);
         }
-
-
-
-
-
-
         TextView difference = (TextView)currentView.findViewById(R.id.differenceItemLayout);
         TextView overUnder = (TextView)currentView.findViewById(R.id.overUnderItemLayout);
-        TextView categoryName = (TextView)currentView.findViewById(R.id.categoryNameItemLayout);
+        TextView budgetName = (TextView)currentView.findViewById(R.id.categoryNameItemLayout);
         TextView expenses = (TextView)currentView.findViewById(R.id.projectedValueItemLayout);
         TextView spent = (TextView)currentView.findViewById(R.id.spentValueItemLayout);
         TextView spentOrEarned = (TextView)currentView.findViewById(R.id.spentItemLayout);
@@ -87,15 +82,13 @@ public class ListViewAdapter extends BaseAdapter{
         }
 
 
-        List<String> categoryList = ldo.getCategoryList();
-        List<Double> expenseList = ldo.getExpenseList();
-        List<Double> spentList = ldo.getSpentList();
+
 
 
         //pass data from list to objects
-        String catName = categoryList.get(position);
-        double exp = expenseList.get(position);
-        double totSpent = spentList.get(position);
+        String budName = budgetListItemList.get(position).getBudgetName();
+        double exp = budgetListItemList.get(position).getExpenses();
+        double totSpent = budgetListItemList.get(position).getSpent();
         double diff;
         if(position != 0) {
             diff = exp - totSpent;
@@ -157,7 +150,7 @@ public class ListViewAdapter extends BaseAdapter{
 
         Log.d("listviewadapter", "over under is " + ovUn);
 
-        categoryName.setText(catName);
+        budgetName.setText(budName);
         expenses.setText(fmtExp);
         spent.setText(fmtTotSpent);
         difference.setText(fmtDiff);

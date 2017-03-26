@@ -179,25 +179,57 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
     }
 
 
-    public void addCategory(String category, Boolean isDefault) {
-        String no = null;
+    public CategoryObj addCategory(CategoryObj categoryObj) {
+
         SQLiteDatabase db = this.getWritableDatabase();
 
+        //check category name hasn't already been used
+
         ContentValues values = new ContentValues();
-        values.put(Categories.CATEGORIES_CATEGORY, category);
-        if (isDefault){
-            values.put(Categories.CATEGORIES_DEFAULT, 1);
-        }
-        else {
-            values.put(Categories.CATEGORIES_DEFAULT, 0);
-        }
+        values.put(Categories.CATEGORIES_CATEGORY, categoryObj.getCategoryName());
+        values.put(Categories.CATEGORIES_DEFAULT, categoryObj.getDefaultCategory());
 
 
         // Inserting Row
-        db.insert(Categories.CATEGORIES_TABLE_NAME, null, values);
+        long rowID = db.insert(Categories.CATEGORIES_TABLE_NAME, null, values);
+        return getCategory((int)rowID);
 
-        //Log.d("row inserted " , "new row id is " + Long.toString(db.insert(Categories.TABLE_NAME, null, values)));
-        db.close(); // Closing database connection
+    }
+
+    public boolean checkCategoryName(CategoryObj categoryObj){
+
+        boolean uniqueName;
+        String newCategory = categoryObj.getCategoryName();
+        String categoryInDB = "";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME +
+        " WHERE " + Categories.CATEGORIES_CATEGORY + " LIKE " + "'" + newCategory + "'", null);
+        if(cursor.moveToFirst()){
+            categoryInDB = cursor.getString(Constants.CATEGORIES_NAME_POSITION);
+        }
+        cursor.close();
+        if(categoryObj.getCategoryName().toUpperCase().equals(categoryInDB.toUpperCase())){
+            uniqueName = false;
+        }else uniqueName = true;
+        return uniqueName;
+
+    }
+
+    public boolean checkBudgetName(String budgetName){
+
+        boolean uniqueName;
+        String categoryInDB = "";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Budgets.BUDGETS_TABLE_NAME +
+                " WHERE " + Budgets.BUDGETS_NAME + " LIKE " + "'" + budgetName + "'", null);
+        if(cursor.moveToFirst()){
+            categoryInDB = cursor.getString(Constants.BUDGETS_NAME_POSITION);
+        }
+        cursor.close();
+        if(budgetName.toUpperCase().equals(categoryInDB.toUpperCase())){
+            uniqueName = false;
+        }else uniqueName = true;
+        return uniqueName;
     }
 
 
@@ -206,17 +238,22 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         Timestamp time;
 
-        String selectQuery = "SELECT  * FROM " + Spending.SPENDING_TABLE_NAME;
+        String selectQuery = "SELECT  * FROM " + Spending.SPENDING_TABLE_NAME + " ORDER BY " +
+                Constants.SPENDING_TIMESTAMP_POSITION + " DESC";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         cursor.moveToFirst();
         try {
             Log.d("Most Recent", cursor.getString(Constants.SPENDING_TIMESTAMP_POSITION));
-            return Timestamp.valueOf(cursor.getString(Constants.SPENDING_TIMESTAMP_POSITION));
+            time = Timestamp.valueOf(cursor.getString(Constants.SPENDING_TIMESTAMP_POSITION));
+            cursor.close();
+            return time;
+
+
         }
         catch (Exception e){
-
+            cursor.close();
             return null;
         }
     }
@@ -226,17 +263,20 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         Timestamp time;
 
-        String selectQuery = "SELECT  * FROM " + Earning.EARNING_TABLE_NAME;
+        String selectQuery = "SELECT  * FROM " + Earning.EARNING_TABLE_NAME + " ORDER BY " +
+                Constants.EARNING_TIMESTAMP_POSITION + " DESC";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         cursor.moveToFirst();
         try {
             Log.d("Most Recent", cursor.getString(Constants.EARNING_TIMESTAMP_POSITION));
-            return Timestamp.valueOf(cursor.getString(Constants.EARNING_TIMESTAMP_POSITION));
+            time = Timestamp.valueOf(cursor.getString(Constants.EARNING_TIMESTAMP_POSITION));
+            cursor.close();
+            return time;
         }
         catch (Exception e){
-
+            cursor.close();
             return null;
         }
 
@@ -273,18 +313,47 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         return categoriesList;
     }
 
-    public void addSpending(Date date, int budgetID, String budgetName, int categoryID, String categoryName, double spent, String description) {
+    public List<String> getAllCategoriesNotUsed(int budgetID) {
+        List<String> categoriesList = new ArrayList<String>();
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + Categories.CATEGORIES_TABLE_NAME;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+
+                //1 is the column for category name
+                String category = cursor.getString(1);
+
+
+
+
+
+
+                // Adding contact to list
+                categoriesList.add(category);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        // return contact list
+        return categoriesList;
+    }
+
+    public void addSpending(SpendingObj spendingObj) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(Spending.SPENDING_DATE, date.getTime());
-        values.put(Spending.SPENDING_BUDGET_ID, budgetID);
-        values.put(Spending.SPENDING_BUDGET_NAME, budgetName);
-        values.put(Spending.SPENDING_CATEGORY_ID, categoryID);
-        values.put(Spending.SPENDING_CATEGORY_NAME, categoryName);
-        values.put(Spending.SPENDING_SPENT, spent);
-        values.put(Spending.SPENDING_EXPENSE_DESCRIPTION, description);
+        values.put(Spending.SPENDING_DATE, spendingObj.getDate().getTime());
+        values.put(Spending.SPENDING_BUDGET_ID, spendingObj.getBudgetID());
+        values.put(Spending.SPENDING_BUDGET_NAME, spendingObj.getBudgetName());
+        values.put(Spending.SPENDING_CATEGORY_ID, spendingObj.getCategoryID());
+        values.put(Spending.SPENDING_CATEGORY_NAME, spendingObj.getCategoryName());
+        values.put(Spending.SPENDING_SPENT, spendingObj.getSpent());
+        values.put(Spending.SPENDING_EXPENSE_DESCRIPTION, spendingObj.getDescription());
 
 
         // Inserting Row
@@ -294,16 +363,16 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         db.close(); // Closing database connection
     }
 
-    public void addEarning(Date date, int budgetID, String budgetName, double earned, String description) {
+    public void addEarning(EarningObj earningObj) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(Earning.EARNING_DATE, date.getTime());
-        values.put(Earning.EARNING_BUDGET_ID, budgetID);
-        values.put(Earning.EARNING_BUDGET_NAME, budgetName);
-        values.put(Earning.EARNING_EARNED, earned);
-        values.put(Earning.EARNING_INCOME_DESCRIPTION, description);
+        values.put(Earning.EARNING_DATE, earningObj.getDate().getTime());
+        values.put(Earning.EARNING_BUDGET_ID, earningObj.getBudgetID());
+        values.put(Earning.EARNING_BUDGET_NAME, earningObj.getBudgetName());
+        values.put(Earning.EARNING_EARNED, earningObj.getEarned());
+        values.put(Earning.EARNING_INCOME_DESCRIPTION, earningObj.getDescription());
 
 
         // Inserting Row
@@ -316,7 +385,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
 
 
-    public void addBudget(String budgetName) {
+    public int addBudget(String budgetName) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -333,8 +402,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         addDefaultIncome(mostRecentBudgetID,budgetName);
         addDefaultExpenses(mostRecentBudgetID,budgetName);
 
-
-        db.close(); // Closing database connection
+        return mostRecentBudgetID;
     }
 
     private void addDefaultIncome(int budgetID, String budgetName){
@@ -374,15 +442,8 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
             }while (cursor.moveToNext());
 
-
         }
-
-
-
-
-
-
-
+        cursor.close();
     }
 
 
@@ -390,6 +451,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
     public int getMostRecentSpending(){
 
+        int budget;
         String selectQuery = "SELECT  * FROM " + Spending.SPENDING_TABLE_NAME +
                 " ORDER BY " + Spending.SPENDING_TIMESTAMP + " DESC";
 
@@ -399,13 +461,19 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         if (cursor.moveToFirst()) {
             //if there are no entries, cursor will come back null
             try {
-                return cursor.getInt(2);
+                budget = cursor.getInt(Constants.SPENDING_BUDGET_ID_POSITION);
+                cursor.close();
+                return budget;
             } catch (Exception e) {
 
+                cursor.close();
                 return -1;
             }
         }
-        else return -1;
+        else{
+            cursor.close();
+            return -1;
+        }
 
     }
 
@@ -420,13 +488,19 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         if (cursor.moveToFirst()) {
             //if there are no entries, cursor will come back null
             try {
-                return cursor.getInt(2);
+                int budget = cursor.getInt(Constants.EARNING_BUDGET_ID_POSITION);
+                cursor.close();
+                return budget;
             } catch (Exception e) {
 
+                cursor.close();
                 return -1;
             }
         }
-        else return -1;
+        else {
+            cursor.close();
+            return -1;
+        }
 
     }
 
@@ -438,7 +512,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         Log.d("MostRecentBudget", "getMostRecentBudget method called");
 
         String selectQuery = "SELECT  * FROM " + Budgets.BUDGETS_TABLE_NAME +
-                " ORDER BY " + Budgets._ID + " DESC";
+                " ORDER BY " + Budgets.BUDGETS_TIMESTAMP + " DESC";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -447,10 +521,13 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         //if there are no entries, cursor will come back null
         try {
             Log.d("MostRecentBudget", "most recent budgetID is " + cursor.getInt(Constants.BUDGETS_ID_POSITION));
-            return cursor.getInt(Constants.BUDGETS_ID_POSITION);
+            int budget = cursor.getInt(Constants.BUDGETS_ID_POSITION);
+            cursor.close();
+            return budget;
         }
         catch (Exception e){
 
+            cursor.close();
             return -1;
         }
 
@@ -493,6 +570,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
 
         }
+        cursor.close();
         //Log.d("list size dbh", Integer.toString(spendingList.size()));
         Log.d("list size dbh", Integer.toString(i));
 
@@ -536,11 +614,14 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         //get sum of all money spent
         double spent;
         cursor = db.rawQuery("SELECT SUM(" + Spending.SPENDING_SPENT + ") FROM " +
-                Spending.SPENDING_TABLE_NAME + " WHERE " + Spending.SPENDING_BUDGET_ID + " = " +
+                Spending.SPENDING_TABLE_NAME + " WHERE NOT " + Spending.SPENDING_BUDGET_ID + " = " +
                 budgetID,null);
         if(cursor.moveToFirst()){
             spent = cursor.getDouble(0);
+            Log.d("createlist", String.valueOf(cursor.getFloat(0)));
         }
+
+
         else spent = 0;
 
 
@@ -551,11 +632,11 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         categoryList.add(income);
         categoryIDList.add(0);
 
-        cursor = db.rawQuery("SELECT * FROM " + Income.INCOME_TABLE_NAME + " WHERE " +
-        Income.INCOME_BUDGET_ID + " = " + budgetID,null);
-        if(cursor.moveToFirst()){
-            expensesList.add(cursor.getDouble(Constants.INCOME_ESTIMATE_POSITION));
-        }else expensesList.add(0.0);
+
+        expensesList.add(getAllExpenses(budgetID));
+        updateIncome(budgetID,getAllExpenses(budgetID));
+
+
 
 
         cursor = db.rawQuery("SELECT * FROM " + Expenses.EXPENSES_TABLE_NAME + " WHERE " +
@@ -583,6 +664,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         ldo.setExpenseList(expensesList);
         ldo.setSpentList(spentList);
 
+        cursor.close();
         return ldo;
     }
 
@@ -622,16 +704,18 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         }
 
+        cursor.close();
         return spentList;
 
 
     }
 
     //method to return the projected expenses for a category in a budget
-    public Double getProjectedExpenseForCategory(int categoryID, int budgetID){
+    public ExpenseObj getProjectedExpenseForCategory(int categoryID, int budgetID){
 
 
-        double projectedExpense;
+        Log.d("expense", "category id " + categoryID + " budget id " + budgetID);
+        ExpenseObj projectedExpense = new ExpenseObj();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + Expenses.EXPENSES_TABLE_NAME + " WHERE " +
@@ -639,10 +723,17 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         " = " + categoryID, null);
 
         if(cursor.moveToFirst()){
-            projectedExpense = cursor.getDouble(Constants.EXPENSES_ESTIMATED_EXPENSE_POSITION);
-        }else projectedExpense = 0.0;
+            projectedExpense.setID(cursor.getInt(Constants.EXPENSES_ID_POSITION));
+            projectedExpense.setBudgetID(cursor.getInt(Constants.EXPENSES_BUDGET_ID_POSITION));
+            projectedExpense.setBudgetName(cursor.getString(Constants.EXPENSES_BUDGET_NAME_POSITION));
+            projectedExpense.setCategoryID(cursor.getInt(Constants.EXPENSES_CATEGORY_ID_POSITION));
+            projectedExpense.setCategoryName(cursor.getString(Constants.EXPENSES_CATEGORY_NAME_POSITION));
+            projectedExpense.setSpent(cursor.getDouble(Constants.EXPENSES_ESTIMATED_EXPENSE_POSITION));
 
 
+        }else projectedExpense = null;
+
+        cursor.close();
         return projectedExpense;
     }
 
@@ -660,43 +751,50 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
             spentAmount = cursor.getDouble(0);
         }else spentAmount = 0.0;
 
+        cursor.close();
         return spentAmount;
 
     }
 
     //returns category name when given categoryID
-    public String getCategory(int categoryID){
+    public CategoryObj getCategory(int categoryID){
 
-        String category;
+        CategoryObj category = new CategoryObj();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
         Categories._ID + " = " + categoryID, null);
 
         if(cursor.moveToFirst()){
-            category = cursor.getString(Constants.CATEGORIES_NAME_POSITION);
-        }else category = "";
+            category.setID(cursor.getInt(Constants.CATEGORIES_ID_POSITION));
+            category.setCategoryName(cursor.getString(Constants.CATEGORIES_NAME_POSITION));
+            category.setDefaultCategory(cursor.getInt(Constants.CATEGORIES_DEFAULT_POSITION));
+        }
+        cursor.close();
         return category;
     }
 
 
 
     //method to return the projected income for a given budget
-    public Double getProjectedIncome(int budgetID){
+    public IncomeObj getProjectedIncome(int budgetID){
 
 
-        double projectedExpense;
+        IncomeObj projectedIncome = new IncomeObj();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + Income.INCOME_TABLE_NAME + " WHERE " +
                 Income.INCOME_BUDGET_ID + " = " + budgetID, null);
 
         if(cursor.moveToFirst()){
-            projectedExpense = cursor.getDouble(Constants.INCOME_ESTIMATE_POSITION);
-        }else projectedExpense = 0.0;
+            projectedIncome.setID(cursor.getInt(Constants.INCOME_ID_POSITION));
+            projectedIncome.setBudgetID(cursor.getInt(Constants.INCOME_BUDGET_ID_POSITION));
+            projectedIncome.setBudgetName(cursor.getString(Constants.INCOME_BUDGET_NAME_POSITION));
+            projectedIncome.setIncome(cursor.getDouble(Constants.INCOME_ESTIMATE_POSITION));
+        }else projectedIncome = null;
 
-
-        return projectedExpense;
+        cursor.close();
+        return projectedIncome;
     }
 
     //method to return the total amount earned for a given budget
@@ -712,6 +810,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
             spentAmount = cursor.getDouble(0);
         }else spentAmount = 0.0;
 
+        cursor.close();
         return spentAmount;
 
     }
@@ -725,24 +824,306 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         Earning.EARNING_BUDGET_ID + " = " + budgetID + " ORDER BY " + Earning.EARNING_DATE + " DESC", null);
 
         if(cursor.moveToFirst()){
+            do {
 
-            EarningObj earned = new EarningObj();
-            earned.setID(cursor.getInt(Constants.EARNING_ID_POSITION));
-            earned.setTimestamp(Timestamp.valueOf(cursor.getString(Constants.EARNING_TIMESTAMP_POSITION)));
-            Date date = new Date(cursor.getLong(Constants.EARNING_DATE_POSITION));
-            earned.setDate(date);
-            earned.setBudgetID(cursor.getInt(Constants.EARNING_BUDGET_ID_POSITION));
-            earned.setBudgetName(cursor.getString(Constants.EARNING_BUDGET_NAME_POSITION));
-            earned.setEarned(cursor.getDouble(Constants.EARNING_EARNED_POSITION));
-            earned.setDescription(cursor.getString(Constants.EARNING_DESCRIPTION_POSITION));
+                EarningObj earned = new EarningObj();
+                earned.setID(cursor.getInt(Constants.EARNING_ID_POSITION));
+                earned.setTimestamp(Timestamp.valueOf(cursor.getString(Constants.EARNING_TIMESTAMP_POSITION)));
+                Date date = new Date(cursor.getLong(Constants.EARNING_DATE_POSITION));
+                earned.setDate(date);
+                earned.setBudgetID(cursor.getInt(Constants.EARNING_BUDGET_ID_POSITION));
+                earned.setBudgetName(cursor.getString(Constants.EARNING_BUDGET_NAME_POSITION));
+                earned.setEarned(cursor.getDouble(Constants.EARNING_EARNED_POSITION));
+                earned.setDescription(cursor.getString(Constants.EARNING_DESCRIPTION_POSITION));
 
-            earningObjList.add(earned);
+                earningObjList.add(earned);
+            }while (cursor.moveToNext());
 
         }
 
+        cursor.close();
         return earningObjList;
 
     }
+
+
+    //accepts a list of category IDs and returns a list of category objects
+    public List<CategoryObj> getCategories(List<Integer> categoryIDList) {
+
+        List<CategoryObj> categoryObjList = new ArrayList<CategoryObj>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor;
+
+        for (int i = 0; i < categoryIDList.size(); i++) {
+
+            cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
+                    Categories._ID + " = " + categoryIDList.get(i), null);
+            if (cursor.moveToFirst()) {
+                CategoryObj category = new CategoryObj();
+                category.setID(cursor.getInt(Constants.CATEGORIES_ID_POSITION));
+                category.setCategoryName(cursor.getString(Constants.CATEGORIES_NAME_POSITION));
+                category.setDefaultCategory(cursor.getInt(Constants.CATEGORIES_DEFAULT_POSITION));
+
+                categoryObjList.add(category);
+            }
+            cursor.close();
+        }
+
+        return categoryObjList;
+    }
+
+    //accepts the expense object and updates the table with the new amount spent
+    public int updateExpense(ExpenseObj expenseObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        //values that are to be updated
+        values.put(Expenses.EXPENSES_ESTIMATE, expenseObj.getSpent());
+
+        //updating row
+        return db.update(Expenses.EXPENSES_TABLE_NAME, values, Expenses._ID + " = " + expenseObj.getID(), null);
+
+
+    }
+
+    //update the estimated income
+    public int updateIncome(int budgetID, double estimate){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        //values that are to be updated
+        values.put(Income.INCOME_ESTIMATE, estimate);
+
+        //updating row
+        return db.update(Income.INCOME_TABLE_NAME, values, Income._ID + " = " + budgetID, null);
+
+
+    }
+
+    public int updateSpending(SpendingObj spendingObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        //values that are to be updated
+        values.put(Spending.SPENDING_DATE, spendingObj.getDate().getTime());
+        values.put(Spending.SPENDING_SPENT, spendingObj.getSpent());
+        values.put(Spending.SPENDING_EXPENSE_DESCRIPTION, spendingObj.getDescription());
+
+        //updating row
+        return db.update(Spending.SPENDING_TABLE_NAME, values, Spending._ID + " = " + spendingObj.getID(), null);
+
+
+    }
+
+    public int updateEarning(EarningObj earningObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        //values that are to be updated
+        values.put(Earning.EARNING_DATE, earningObj.getDate().getTime());
+        values.put(Earning.EARNING_EARNED, earningObj.getEarned());
+        values.put(Earning.EARNING_INCOME_DESCRIPTION, earningObj.getDescription());
+
+        //updating row
+        return db.update(Earning.EARNING_TABLE_NAME, values, Earning._ID + " = " + earningObj.getID(), null);
+
+
+    }
+
+
+    public int deleteSpending(SpendingObj spendingObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        //updating row
+        return db.delete(Spending.SPENDING_TABLE_NAME, Spending._ID + " = " + spendingObj.getID(), null);
+
+
+    }
+
+    public int deleteEarning(EarningObj earningObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        //updating row
+        return db.delete(Earning.EARNING_TABLE_NAME, Earning._ID + " = " + earningObj.getID(), null);
+    }
+
+    public int deleteCategory(int categoryID){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        //updating row
+        return db.delete(Categories.CATEGORIES_TABLE_NAME, Categories._ID + " = " + categoryID, null);
+    }
+
+    public double getAllExpenses(int budgetID){
+
+        double allExpenses;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT SUM(" + Expenses.EXPENSES_ESTIMATE + ") FROM " +
+                Expenses.EXPENSES_TABLE_NAME + " WHERE " + Expenses.EXPENSES_BUDGET_ID + " = " +
+                budgetID,null);
+        if(cursor.moveToFirst()) {
+            allExpenses = cursor.getDouble(0);
+        }
+        else allExpenses = 0;
+        cursor.close();
+        return allExpenses;
+
+    }
+
+    //Return a list of CategoryObjs that aren't used in the current budget
+    public List<CategoryObj> getUnusedCategories(int budgetID){
+
+        Log.d("getUnusedCategoires", String.valueOf(budgetID));
+
+        List<CategoryObj> list = new ArrayList<CategoryObj>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
+        Categories._ID + " NOT IN (SELECT " + Expenses.EXPENSES_CATEGORY_ID + " FROM " +
+        Expenses.EXPENSES_TABLE_NAME + " WHERE " + Expenses.EXPENSES_BUDGET_ID + " = " + budgetID + ")",null);
+
+        if(cursor.moveToFirst()){
+            do {
+                CategoryObj categoryObj = new CategoryObj();
+                Log.d("notused", cursor.getString(Constants.CATEGORIES_ID_POSITION));
+                categoryObj.setID(cursor.getInt(Constants.CATEGORIES_ID_POSITION));
+                categoryObj.setCategoryName(cursor.getString(Constants.CATEGORIES_NAME_POSITION));
+                categoryObj.setDefaultCategory(cursor.getInt(Constants.CATEGORIES_DEFAULT_POSITION));
+
+                list.add(categoryObj);
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
+        return list;
+
+
+
+    }
+
+    public void addNewCategoryExpense(int budgetID, String budgetName, CategoryObj categoryObj){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Expenses.EXPENSES_BUDGET_ID, budgetID);
+        values.put(Expenses.EXPENSES_BUDGET_NAME, budgetName);
+        values.put(Expenses.EXPENSES_CATEGORY_ID, categoryObj.getID());
+        values.put(Expenses.EXPENSES_CATEGORY_NAME, categoryObj.getCategoryName());
+        values.put(Expenses.EXPENSES_ESTIMATE, 0.00);
+        db.insert(Expenses.EXPENSES_TABLE_NAME,null,values);
+    }
+
+    public List<BudgetListItemObj> getAllBudgetsList(){
+
+        //get all budgets from budgets from budgets table X
+        //get sum of expenses using budgets from budgets table X
+        //get sum of spending using budgets from budgets table X
+        //compile lists into list of budgetListItemObjs
+        List<BudgetListItemObj> budgetListItemObjList = new ArrayList<BudgetListItemObj>();
+        List<BudgetObj> budgetObjList = getAllBudgets();
+        List<Double> budgetExpenseList = listOfBudgetExpenses(budgetObjList);
+        List<Double> budgetSpendingList = listOfBudgetSpending(budgetObjList);
+
+        if(budgetObjList.size() == budgetExpenseList.size() && budgetObjList.size() == budgetSpendingList.size()){
+            for(int i =0; i<budgetObjList.size();i++){
+                BudgetListItemObj budgetListItemObj = new BudgetListItemObj(budgetObjList.get(i).getID(),
+                        budgetObjList.get(i).getBudgetName(),budgetExpenseList.get(i),
+                        budgetSpendingList.get(i));
+                budgetListItemObjList.add(budgetListItemObj);
+            }
+
+        }else{
+            //something went wrong
+            Log.e("getAllBudgetsList", "Something went wrong");
+        }
+        return budgetListItemObjList;
+    }
+
+
+    //get all budgets from budget table and return as list of budgetObjs
+    public List<BudgetObj> getAllBudgets(){
+
+        List<BudgetObj> budgetObjList = new ArrayList<BudgetObj>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Budgets.BUDGETS_TABLE_NAME + " ORDER BY " +
+                Budgets.BUDGETS_TIMESTAMP + " DESC",null);
+        if(cursor.moveToFirst()){
+            do{
+                BudgetObj budgetObj = new BudgetObj(cursor.getInt(Constants.BUDGETS_ID_POSITION),
+                        Timestamp.valueOf(cursor.getString(Constants.BUDGETS_TIMESTAMP_POSITION)),
+                        cursor.getString(Constants.BUDGETS_NAME_POSITION));
+                budgetObjList.add(budgetObj);
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
+        return budgetObjList;
+    }
+
+
+    //get total expenses for each budget and return as list
+    public List<Double> listOfBudgetExpenses(List<BudgetObj> budgetObjList){
+
+        List<Double> budgetExpenseList = new ArrayList<Double>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        //for loop to move through all budgets
+        for(int i = 0; i < budgetObjList.size(); i++){
+            Cursor cursor = db.rawQuery("SELECT SUM(" + Expenses.EXPENSES_ESTIMATE + ") FROM " +
+                    Expenses.EXPENSES_TABLE_NAME + " WHERE " + Expenses.EXPENSES_BUDGET_ID + " = " +
+                    budgetObjList.get(0).getID(),null);
+            if(cursor.moveToFirst()){
+                budgetExpenseList.add(cursor.getDouble(0));
+            }else budgetExpenseList.add(0.00);
+            cursor.close();
+        }
+        return budgetExpenseList;
+    }
+
+    //get total spent for each budget and return as list
+    public List<Double> listOfBudgetSpending(List<BudgetObj> budgetObjList){
+
+        List<Double> budgetSpendingList = new ArrayList<Double>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        //for loop to move through all budgets
+        for(int i = 0; i < budgetObjList.size(); i++){
+            Cursor cursor = db.rawQuery("SELECT SUM(" + Spending.SPENDING_SPENT + ") FROM " +
+                    Spending.SPENDING_TABLE_NAME + " WHERE " + Spending.SPENDING_BUDGET_ID + " = " +
+                    budgetObjList.get(0).getID(),null);
+            if(cursor.moveToFirst()){
+                budgetSpendingList.add(cursor.getDouble(0));
+            }else budgetSpendingList.add(0.00);
+            cursor.close();
+        }
+        return budgetSpendingList;
+    }
+
+    public void updateBudgetTimestamp(int budgetID, Timestamp time){
+
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Budgets.BUDGETS_TIMESTAMP,time.toString());
+        db.update(Budgets.BUDGETS_TABLE_NAME,values,Budgets._ID + " = " + budgetID,null);
+    }
+
+    public void updateCategoryDefault(CategoryObj categoryObj){
+
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Categories.CATEGORIES_DEFAULT, categoryObj.getDefaultCategory());
+        db.update(Categories.CATEGORIES_TABLE_NAME,values,Categories._ID + " = " + categoryObj.getID(),null);
+    }
+
+
 
 
 
@@ -772,7 +1153,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
     public static class Categories implements BaseColumns {
         public static final String CATEGORIES_TABLE_NAME = "Categories";
-        public static final String CATEGORIES_CATEGORY = "Categories";
+        public static final String CATEGORIES_CATEGORY = "Category";
         public static final String CATEGORIES_DEFAULT = "IsDefault";
     }
 
