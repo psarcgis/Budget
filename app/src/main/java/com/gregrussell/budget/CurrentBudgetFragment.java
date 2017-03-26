@@ -54,8 +54,9 @@ public class CurrentBudgetFragment extends Fragment {
     public static ListViewAdapter adapter;
     FloatingActionButton addCategoryButton;
     public static String BUDGET_NAME;
-    List<CategoryObj> unusedCategoryList = new ArrayList<CategoryObj>();
+    public static List<CategoryObj> unusedCategoryList = new ArrayList<CategoryObj>();
     ViewGroup rootView;
+    int spinnerPosition;
 
     @Override
     public void onResume(){
@@ -184,10 +185,12 @@ public class CurrentBudgetFragment extends Fragment {
                 Calendar c = Calendar.getInstance();
                 Timestamp time = new Timestamp(c.getTime().getTime());
                 myDBHelper.updateBudgetTimestamp(CURRENT_BUDGET,time);
-                unusedCategoryList = myDBHelper.getUnusedCategories(CURRENT_BUDGET);
-                for(int i =0; i < unusedCategoryList.size(); i++){
-                    Log.d("allCategoriesNotUsed", unusedCategoryList.get(i).getCategoryName());
-                }
+
+            }
+            unusedCategoryList.clear();
+            unusedCategoryList = myDBHelper.getUnusedCategories(CURRENT_BUDGET);
+            for(int i =0; i < unusedCategoryList.size(); i++){
+                Log.d("allCategoriesNotUsed CB", unusedCategoryList.get(i).getCategoryName());
             }
 
 
@@ -229,6 +232,7 @@ public class CurrentBudgetFragment extends Fragment {
             //set text from string[] result that is returned by doInBackground
 
             String ovUn;
+
 
 
 
@@ -454,6 +458,7 @@ public class CurrentBudgetFragment extends Fragment {
         final Spinner categorySpinner = (Spinner)addCategoryDialog.findViewById(R.id.spinnerAddCategoryDialog);
         final EditText categoryNameEditText = (EditText)addCategoryDialog.findViewById(R.id.editTextNameAddCategoryDialog);
 
+
         //create a dialog box to add new category
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
@@ -467,21 +472,29 @@ public class CurrentBudgetFragment extends Fragment {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
+                                Log.d("spinnerPosition", String.valueOf(spinnerPosition));
                                 if(!radioAddNew.isChecked() && !radioUseExisting.isChecked()){
-                                    addCategory();
-                                }else
-                                if(String.valueOf(categoryNameEditText.getText()).trim().isEmpty()){
                                     new AlertDialog.Builder(context)
                                             .setTitle("Invalid Category Name")
-                                            .setMessage("Must enter a name for the new category.")
+                                            .setMessage("Must select or enter a name for the new category.")
                                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     addCategory();
                                                 }
                                             })
                                             .show();
-                                }else{
-                                    if(radioAddNew.isChecked()) {
+                                }else
+                                if(radioAddNew.isChecked() && String.valueOf(categoryNameEditText.getText()).trim().isEmpty()){
+                                    new AlertDialog.Builder(context)
+                                            .setTitle("Invalid Category Name")
+                                            .setMessage("Must select or enter a name for the new category.")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    addCategory();
+                                                }
+                                            })
+                                            .show();
+                                }else if(radioAddNew.isChecked()) {
                                         CategoryObj categoryObj = new CategoryObj();
                                         int isDefault;
                                         if (checkBox.isChecked()) {
@@ -491,11 +504,29 @@ public class CurrentBudgetFragment extends Fragment {
                                         categoryObj.setDefaultCategory(isDefault);
                                         AsyncAddNewCategory addNewCategoryTask = new AsyncAddNewCategory();
                                         addNewCategoryTask.execute(categoryObj);
-                                    }else{
-                                        //AsyncAddExistingCategory
+                                    }else if(spinnerPosition >= unusedCategoryList.size()){
+                                    new AlertDialog.Builder(context)
+                                            .setTitle("Invalid Category Name")
+                                            .setMessage("Must select or enter a name for the new category.")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    addCategory();
+                                                }
+                                            })
+                                            .show();
+                                    }else {
+                                    CategoryObj categoryObj = unusedCategoryList.get(spinnerPosition);
+                                    int isDefault;
+                                    if (checkBox.isChecked()) {
+                                        isDefault = 1;
+                                    } else isDefault = 0;
+                                    categoryObj.setDefaultCategory(isDefault);
+                                    Log.d("existingCategory", categoryObj.getCategoryName());
+                                    AsyncAddExistingCategory addExistingCategory = new AsyncAddExistingCategory();
+                                    addExistingCategory.execute(categoryObj);
                                     }
                                 }
-                            }
+
 
 
                         })
@@ -595,6 +626,7 @@ public class CurrentBudgetFragment extends Fragment {
                 return v;
             }
 
+
             @Override
             public int getCount(){
 
@@ -626,6 +658,20 @@ public class CurrentBudgetFragment extends Fragment {
 
         //set default selection to hint
         categorySpinner.setSelection(spinnerAdapter.getCount());
+
+        //onItemSelectListener for spinner
+        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                spinnerPosition = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
 
         // show it
         alertDialog.show();
@@ -683,9 +729,25 @@ public class CurrentBudgetFragment extends Fragment {
 
         @Override
         protected Boolean doInBackground(CategoryObj... params) {
+
+            CategoryObj categoryObj = params[0];
+            Log.d("currentBudget add exist", BUDGET_NAME + " " + CURRENT_BUDGET);
+            myDBHelper.addNewCategoryExpense(CURRENT_BUDGET, BUDGET_NAME, categoryObj);
             return null;
         }
+
+        @Override
+        protected void onPostExecute(Boolean result){
+
+            AsyncLoadBudget loadBudget = new AsyncLoadBudget();
+            loadBudget.execute();
+            AsyncLoadList loadList = new AsyncLoadList();
+            loadList.execute();
+        }
+
+
     }
+
 
 
 

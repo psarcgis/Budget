@@ -614,7 +614,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         //get sum of all money spent
         double spent;
         cursor = db.rawQuery("SELECT SUM(" + Spending.SPENDING_SPENT + ") FROM " +
-                Spending.SPENDING_TABLE_NAME + " WHERE " + Spending.SPENDING_BUDGET_ID + " = " +
+                Spending.SPENDING_TABLE_NAME + " WHERE NOT " + Spending.SPENDING_BUDGET_ID + " = " +
                 budgetID,null);
         if(cursor.moveToFirst()){
             spent = cursor.getDouble(0);
@@ -987,7 +987,6 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         Log.d("getUnusedCategoires", String.valueOf(budgetID));
 
         List<CategoryObj> list = new ArrayList<CategoryObj>();
-        CategoryObj categoryObj = new CategoryObj();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
         Categories._ID + " NOT IN (SELECT " + Expenses.EXPENSES_CATEGORY_ID + " FROM " +
@@ -995,7 +994,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         if(cursor.moveToFirst()){
             do {
-
+                CategoryObj categoryObj = new CategoryObj();
                 Log.d("notused", cursor.getString(Constants.CATEGORIES_ID_POSITION));
                 categoryObj.setID(cursor.getInt(Constants.CATEGORIES_ID_POSITION));
                 categoryObj.setCategoryName(cursor.getString(Constants.CATEGORIES_NAME_POSITION));
@@ -1114,6 +1113,14 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         ContentValues values = new ContentValues();
         values.put(Budgets.BUDGETS_TIMESTAMP,time.toString());
         db.update(Budgets.BUDGETS_TABLE_NAME,values,Budgets._ID + " = " + budgetID,null);
+    }
+
+    public void updateCategoryDefault(CategoryObj categoryObj){
+
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Categories.CATEGORIES_DEFAULT, categoryObj.getDefaultCategory());
+        db.update(Categories.CATEGORIES_TABLE_NAME,values,Categories._ID + " = " + categoryObj.getID(),null);
     }
 
 

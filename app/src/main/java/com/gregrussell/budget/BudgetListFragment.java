@@ -220,6 +220,12 @@ public class BudgetListFragment extends Fragment{
 
             Log.d("listDataObj Budget", "Entered PopulateHeader, current budget is " + CurrentBudgetFragment.BUDGET_NAME);
 
+            //set unusedcategorylist
+            CurrentBudgetFragment.unusedCategoryList.clear();
+            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.CURRENT_BUDGET);
+            for(int i =0; i < CurrentBudgetFragment.unusedCategoryList.size(); i++){
+                Log.d("allCategoriesNotUsed BL", CurrentBudgetFragment.unusedCategoryList.get(i).getCategoryName());
+            }
 
 
             ListDataObj listData = myDBHelper.createListData(CurrentBudgetFragment.CURRENT_BUDGET);
