@@ -215,6 +215,23 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
     }
 
+    public boolean checkBudgetName(String budgetName){
+
+        boolean uniqueName;
+        String categoryInDB = "";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Budgets.BUDGETS_TABLE_NAME +
+                " WHERE " + Budgets.BUDGETS_NAME + " LIKE " + "'" + budgetName + "'", null);
+        if(cursor.moveToFirst()){
+            categoryInDB = cursor.getString(Constants.BUDGETS_NAME_POSITION);
+        }
+        cursor.close();
+        if(budgetName.toUpperCase().equals(categoryInDB.toUpperCase())){
+            uniqueName = false;
+        }else uniqueName = true;
+        return uniqueName;
+    }
+
 
     public Timestamp getSpendingTimestamp(){
         SQLiteDatabase db = this.getReadableDatabase();
@@ -368,7 +385,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
 
 
-    public void addBudget(String budgetName) {
+    public int addBudget(String budgetName) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -385,8 +402,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         addDefaultIncome(mostRecentBudgetID,budgetName);
         addDefaultExpenses(mostRecentBudgetID,budgetName);
 
-
-        db.close(); // Closing database connection
+        return mostRecentBudgetID;
     }
 
     private void addDefaultIncome(int budgetID, String budgetName){
@@ -496,7 +512,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         Log.d("MostRecentBudget", "getMostRecentBudget method called");
 
         String selectQuery = "SELECT  * FROM " + Budgets.BUDGETS_TABLE_NAME +
-                " ORDER BY " + Budgets._ID + " DESC";
+                " ORDER BY " + Budgets.BUDGETS_TIMESTAMP + " DESC";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -698,6 +714,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
     public ExpenseObj getProjectedExpenseForCategory(int categoryID, int budgetID){
 
 
+        Log.d("expense", "category id " + categoryID + " budget id " + budgetID);
         ExpenseObj projectedExpense = new ExpenseObj();
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -967,12 +984,14 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
     //Return a list of CategoryObjs that aren't used in the current budget
     public List<CategoryObj> getUnusedCategories(int budgetID){
 
+        Log.d("getUnusedCategoires", String.valueOf(budgetID));
+
         List<CategoryObj> list = new ArrayList<CategoryObj>();
         CategoryObj categoryObj = new CategoryObj();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
         Categories._ID + " NOT IN (SELECT " + Expenses.EXPENSES_CATEGORY_ID + " FROM " +
-        Expenses.EXPENSES_TABLE_NAME + " WHERE NOT " + Expenses.EXPENSES_BUDGET_ID + " = " + budgetID + ")",null);
+        Expenses.EXPENSES_TABLE_NAME + " WHERE " + Expenses.EXPENSES_BUDGET_ID + " = " + budgetID + ")",null);
 
         if(cursor.moveToFirst()){
             do {
@@ -1000,6 +1019,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         values.put(Expenses.EXPENSES_BUDGET_NAME, budgetName);
         values.put(Expenses.EXPENSES_CATEGORY_ID, categoryObj.getID());
         values.put(Expenses.EXPENSES_CATEGORY_NAME, categoryObj.getCategoryName());
+        values.put(Expenses.EXPENSES_ESTIMATE, 0.00);
         db.insert(Expenses.EXPENSES_TABLE_NAME,null,values);
     }
 
@@ -1035,7 +1055,8 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
         List<BudgetObj> budgetObjList = new ArrayList<BudgetObj>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + Budgets.BUDGETS_TABLE_NAME,null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Budgets.BUDGETS_TABLE_NAME + " ORDER BY " +
+                Budgets.BUDGETS_TIMESTAMP + " DESC",null);
         if(cursor.moveToFirst()){
             do{
                 BudgetObj budgetObj = new BudgetObj(cursor.getInt(Constants.BUDGETS_ID_POSITION),
@@ -1085,6 +1106,14 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
             cursor.close();
         }
         return budgetSpendingList;
+    }
+
+    public void updateBudgetTimestamp(int budgetID, Timestamp time){
+
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Budgets.BUDGETS_TIMESTAMP,time.toString());
+        db.update(Budgets.BUDGETS_TABLE_NAME,values,Budgets._ID + " = " + budgetID,null);
     }
 
 

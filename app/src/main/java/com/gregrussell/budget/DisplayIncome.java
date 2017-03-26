@@ -57,7 +57,7 @@ public class DisplayIncome extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_income);
 
-        Log.d("DisplayIncome", "Current Budget is " + String.valueOf(MainActivity.CURRENT_BUDGET));
+        Log.d("DisplayIncome", "Current Budget is " + String.valueOf(CurrentBudgetFragment.CURRENT_BUDGET));
 
         //initializing for editButton functionality
         inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -162,7 +162,7 @@ public class DisplayIncome extends Activity {
         }
 
         //use myDBHelper to get projected income and return value
-        incomeObj = myDBHelper.getProjectedIncome(MainActivity.CURRENT_BUDGET);
+        incomeObj = myDBHelper.getProjectedIncome(CurrentBudgetFragment.CURRENT_BUDGET);
         myDBHelper.close();
 
         return incomeObj;
@@ -192,7 +192,7 @@ public class DisplayIncome extends Activity {
         }
 
         //use myDBHelper to get projected expense and return value
-        double actualExpense = myDBHelper.getEarnedAmount(MainActivity.CURRENT_BUDGET);
+        double actualExpense = myDBHelper.getEarnedAmount(CurrentBudgetFragment.CURRENT_BUDGET);
         myDBHelper.close();
 
         return actualExpense;
@@ -403,13 +403,13 @@ public class DisplayIncome extends Activity {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
-                                String editTextString = String.valueOf(spentEdit.getText());
+                                String editTextString = String.valueOf(spentEdit.getText()).trim();
                                 double editTextDouble;
 
                                 //checks if input is a double, and updates projected expenses if it is
                                 try{
                                     String descriptionString = "";
-                                    descriptionString = String.valueOf(descriptionEdit.getText());
+                                    descriptionString = String.valueOf(descriptionEdit.getText()).trim();
                                     editTextDouble = Double.parseDouble(editTextString);
 
                                     //currency formatter
@@ -499,7 +499,7 @@ public class DisplayIncome extends Activity {
 
             //use myDBHelper add earningObj to the Earning table
             myDBHelper.addEarning(earningObj[0]);
-            earningObjList = myDBHelper.getEarningsList(MainActivity.CURRENT_BUDGET);
+            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.CURRENT_BUDGET);
             myDBHelper.close();
             ListViewAdapterEarning adapter = null;
             if(earningObjList != null) {
@@ -571,7 +571,7 @@ public class DisplayIncome extends Activity {
             } catch (SQLException sqle) {
                 throw sqle;
             }
-            earningObjList = myDBHelper.getEarningsList(MainActivity.CURRENT_BUDGET);
+            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.CURRENT_BUDGET);
             myDBHelper.close();
 
             //set listview adapter
@@ -648,13 +648,13 @@ public class DisplayIncome extends Activity {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
-                                String editTextString = String.valueOf(spentEdit.getText());
+                                String editTextString = String.valueOf(spentEdit.getText()).trim();
                                 double editTextDouble;
 
                                 //checks if input is a double, and updates projected expenses if it is
                                 try{
                                     String descriptionString = "";
-                                    descriptionString = String.valueOf(descriptionEdit.getText());
+                                    descriptionString = String.valueOf(descriptionEdit.getText()).trim();
                                     editTextDouble = Double.parseDouble(editTextString);
                                     EarningObj earningObj;
                                     try {
@@ -778,7 +778,7 @@ public class DisplayIncome extends Activity {
 
             //use myDBHelper update given earningObj
             myDBHelper.updateEarning(earningObj[0]);
-            earningObjList = myDBHelper.getEarningsList(MainActivity.CURRENT_BUDGET);
+            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.CURRENT_BUDGET);
             myDBHelper.close();
             ListViewAdapterEarning adapter = null;
             if(earningObjList != null) {
@@ -829,7 +829,7 @@ public class DisplayIncome extends Activity {
 
             //use myDBHelper to delete given earningObj
             myDBHelper.deleteEarning(earningObj[0]);
-            earningObjList = myDBHelper.getEarningsList(MainActivity.CURRENT_BUDGET);
+            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.CURRENT_BUDGET);
             myDBHelper.close();
             ListViewAdapterEarning adapter = null;
             if(earningObjList != null) {

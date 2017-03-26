@@ -71,7 +71,7 @@ public class DisplayCategory extends Activity{
 
         //get the category ID from the extra on the intent
         Intent intent = getIntent();
-        categoryID = intent.getIntExtra(MainActivity.EXTRA_MESSAGE_TO_DISPLAY_CATEGORY,-1);
+        categoryID = intent.getIntExtra(CurrentBudgetFragment.EXTRA_MESSAGE_TO_DISPLAY_CATEGORY,-1);
 
         //initializing views
         list = (ListView)findViewById(R.id.listViewDisplayCategory);
@@ -198,7 +198,8 @@ public class DisplayCategory extends Activity{
         }
 
         //use myDBHelper to get projected expense object and return
-        expenseObj = myDBHelper.getProjectedExpenseForCategory(categoryID, MainActivity.CURRENT_BUDGET);
+        expenseObj = myDBHelper.getProjectedExpenseForCategory(categoryID, CurrentBudgetFragment.CURRENT_BUDGET);
+        Log.d("expense", String.valueOf(expenseObj));
         myDBHelper.close();
         return expenseObj;
     }
@@ -219,7 +220,7 @@ public class DisplayCategory extends Activity{
         }
 
         //use myDBHelper to get projected expense and return value
-        double actualExpense = myDBHelper.getSpentAmountForCategory(categoryID, MainActivity.CURRENT_BUDGET);
+        double actualExpense = myDBHelper.getSpentAmountForCategory(categoryID, CurrentBudgetFragment.CURRENT_BUDGET);
         myDBHelper.close();
 
         return actualExpense;
@@ -288,7 +289,7 @@ public class DisplayCategory extends Activity{
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
-                                String editTextString = String.valueOf(projectedEditText.getText());
+                                String editTextString = String.valueOf(projectedEditText.getText()).trim();
                                 double editTextDouble;
 
                                 //checks if input is a double, and updates projected expenses if it is
@@ -412,13 +413,13 @@ public class DisplayCategory extends Activity{
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
-                                String editTextString = String.valueOf(spentEdit.getText());
+                                String editTextString = String.valueOf(spentEdit.getText()).trim();
                                 double editTextDouble;
 
                                 //checks if input is a double, and updates projected expenses if it is
                                 try{
                                     String descriptionString = "";
-                                    descriptionString = String.valueOf(descriptionEdit.getText());
+                                    descriptionString = String.valueOf(descriptionEdit.getText()).trim();
                                     editTextDouble = Double.parseDouble(editTextString);
 
                                     //currency formatter
@@ -510,7 +511,7 @@ public class DisplayCategory extends Activity{
 
             //use myDBHelper add spendingObj to the Spending table
             myDBHelper.addSpending(spendingObj[0]);
-            spendingObjList = myDBHelper.getSpendingsByCategory(MainActivity.CURRENT_BUDGET, categoryID);
+            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.CURRENT_BUDGET, categoryID);
             myDBHelper.close();
             ListViewAdapterSpending adapter = null;
             if(spendingObjList != null) {
@@ -581,7 +582,7 @@ public class DisplayCategory extends Activity{
             } catch (SQLException sqle) {
                 throw sqle;
             }
-            spendingObjList = myDBHelper.getSpendingsByCategory(MainActivity.CURRENT_BUDGET,categoryID);
+            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.CURRENT_BUDGET,categoryID);
             myDBHelper.close();
 
             //set listview adapter
@@ -659,13 +660,13 @@ public class DisplayCategory extends Activity{
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
-                                String editTextString = String.valueOf(spentEdit.getText());
+                                String editTextString = String.valueOf(spentEdit.getText()).trim();
                                 double editTextDouble;
 
                                 //checks if input is a double, and updates projected expenses if it is
                                 try{
                                     String descriptionString = "";
-                                    descriptionString = String.valueOf(descriptionEdit.getText());
+                                    descriptionString = String.valueOf(descriptionEdit.getText()).trim();
                                     editTextDouble = Double.parseDouble(editTextString);
                                     SpendingObj spendingObj;
                                     try {
@@ -791,7 +792,7 @@ public class DisplayCategory extends Activity{
 
             //use myDBHelper update given spendingObj
             myDBHelper.updateSpending(spendingObj[0]);
-            spendingObjList = myDBHelper.getSpendingsByCategory(MainActivity.CURRENT_BUDGET, categoryID);
+            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.CURRENT_BUDGET, categoryID);
             myDBHelper.close();
             ListViewAdapterSpending adapter = null;
             if(spendingObjList != null) {
@@ -842,7 +843,7 @@ public class DisplayCategory extends Activity{
 
             //use myDBHelper to delete given spendingObj
             myDBHelper.deleteSpending(spendingObj[0]);
-            spendingObjList = myDBHelper.getSpendingsByCategory(MainActivity.CURRENT_BUDGET, categoryID);
+            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.CURRENT_BUDGET, categoryID);
             myDBHelper.close();
             ListViewAdapterSpending adapter = null;
             if(spendingObjList != null) {

@@ -15,4 +15,6 @@
     <string name="checkBoxAddCategoryDialog">Make Default</string>
     <string name="addCategoryTitle">Add New Category</string>
     <string name="spinnerAddCategoryHint">\"Select Category\"</string>
+    <string name="hintAddNewBudget">Enter Name For Budget</string>
+    <string name="addNewBudget">Add New Budget</string>
 </resources>

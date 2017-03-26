@@ -31,6 +31,7 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -43,17 +44,31 @@ public class CurrentBudgetFragment extends Fragment {
     DataBaseHelperCategory myDBHelper;
     public static int CURRENT_BUDGET;
     public static final String EXTRA_MESSAGE_TO_DISPLAY_CATEGORY = "com.gregrussell.budget.EXTRA_INTENT_TO_DISPLAY_CATEGORY";
-    View containerLayout;
-    TextView difference;
-    TextView overUnder;
-    TextView budgetName;
-    TextView projectedExpenses;
-    TextView spent;
-    ListView listView;
+    public static View containerLayout;
+    public static TextView difference;
+    public static TextView overUnder;
+    public static TextView budgetName;
+    public static TextView projectedExpenses;
+    public static TextView spent;
+    public static ListView listView;
+    public static ListViewAdapter adapter;
     FloatingActionButton addCategoryButton;
     public static String BUDGET_NAME;
     List<CategoryObj> unusedCategoryList = new ArrayList<CategoryObj>();
     ViewGroup rootView;
+
+    @Override
+    public void onResume(){
+
+        super.onResume();
+        Log.d("currentbudget onresume", "on resume");
+        AsyncLoadHeader loadHeader = new AsyncLoadHeader();
+        loadHeader.execute();
+
+        AsyncLoadList loadList = new AsyncLoadList();
+        loadList.execute();
+
+    }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -153,84 +168,39 @@ public class CurrentBudgetFragment extends Fragment {
 
             }
 
+
+            //myDBHelper.checkCategoryName(categoryObj);
+
             //myDBHelper.addCategory("Dating", false);
-            unusedCategoryList = myDBHelper.getUnusedCategories(CURRENT_BUDGET);
-            for(int i =0; i < unusedCategoryList.size(); i++){
-                Log.d("allCategoriesNotUsed", unusedCategoryList.get(i).getCategoryName());
-            }
-
-            Timestamp spendingTime = myDBHelper.getSpendingTimestamp();
-            Timestamp earningTime = myDBHelper.getEarningTimestamp();
-
-            if(spendingTime != null && earningTime != null) {
-
-                if (spendingTime.after(earningTime)) {
-
-                    //use spending
-                    recentBudget = myDBHelper.getMostRecentSpending();
-                    CURRENT_BUDGET = recentBudget;
 
 
 
 
-
-                } else {
-
-                    //use earning
-                    recentBudget = myDBHelper.getMostRecentEarning();
-                    CURRENT_BUDGET = recentBudget;
-
-
-
-                }
-
-            }else if(spendingTime == null && earningTime == null){
-
-                recentBudget = myDBHelper.getMostRecentBudget();
-                if(recentBudget == -1){
-                    CreateBudget();
-                }else {
-                    CURRENT_BUDGET = recentBudget;
-
-
-
-
-                }
-
-
-            }else if(spendingTime == null) {
-                Log.d("Most Recent STimestamp", "null");
-                Log.d("Most Recent ETimestamp", earningTime.toString());
-                //use earning
-
-                recentBudget = myDBHelper.getMostRecentEarning();
+            recentBudget = myDBHelper.getMostRecentBudget();
+            if(recentBudget == -1){
+                createBudget();
+            }else {
                 CURRENT_BUDGET = recentBudget;
-
-
-
+                Calendar c = Calendar.getInstance();
+                Timestamp time = new Timestamp(c.getTime().getTime());
+                myDBHelper.updateBudgetTimestamp(CURRENT_BUDGET,time);
+                unusedCategoryList = myDBHelper.getUnusedCategories(CURRENT_BUDGET);
+                for(int i =0; i < unusedCategoryList.size(); i++){
+                    Log.d("allCategoriesNotUsed", unusedCategoryList.get(i).getCategoryName());
+                }
             }
-            else{
-                //use spending
-                recentBudget = myDBHelper.getMostRecentSpending();
-                CURRENT_BUDGET = recentBudget;
 
 
 
 
-                Log.d("Most Recent Timestamp", spendingTime.toString());
-            }
+
         }
 
-        private void CreateBudget(){
+        private void createBudget(){
 
-
-            Log.d("CreateBudget", "Entered Create Budget");
+            Log.d("createBudget", "Entered Create Budget");
             myDBHelper.addBudget("March 2017");
             LoadBudget();
-
-
-
-
         }
 
 
@@ -386,8 +356,7 @@ public class CurrentBudgetFragment extends Fragment {
     private class AsyncLoadList extends AsyncTask<Void,Void,Boolean>{
 
 
-        ListViewAdapter adapter;
-        ListView listView;
+
         ListDataObj listData;
 
         @Override
@@ -501,7 +470,7 @@ public class CurrentBudgetFragment extends Fragment {
                                 if(!radioAddNew.isChecked() && !radioUseExisting.isChecked()){
                                     addCategory();
                                 }else
-                                if(String.valueOf(categoryNameEditText.getText()).equals("")){
+                                if(String.valueOf(categoryNameEditText.getText()).trim().isEmpty()){
                                     new AlertDialog.Builder(context)
                                             .setTitle("Invalid Category Name")
                                             .setMessage("Must enter a name for the new category.")
@@ -518,7 +487,7 @@ public class CurrentBudgetFragment extends Fragment {
                                         if (checkBox.isChecked()) {
                                             isDefault = 1;
                                         } else isDefault = 0;
-                                        categoryObj.setCategoryName(String.valueOf(categoryNameEditText.getText()));
+                                        categoryObj.setCategoryName(String.valueOf(categoryNameEditText.getText()).trim());
                                         categoryObj.setDefaultCategory(isDefault);
                                         AsyncAddNewCategory addNewCategoryTask = new AsyncAddNewCategory();
                                         addNewCategoryTask.execute(categoryObj);
@@ -612,7 +581,7 @@ public class CurrentBudgetFragment extends Fragment {
         });
 
         //adapter for categorySpinner
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.layout.spinner_layout_add_category_dialog){
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(context, R.layout.spinner_layout_add_category_dialog){
             @Override
             public View getView(int position, View convertView, ViewGroup parent){
 
@@ -634,29 +603,29 @@ public class CurrentBudgetFragment extends Fragment {
             }
         };
 
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         //add categories in unusedCategoryList
         for(int i = 0; i < unusedCategoryList.size(); i++){
-            adapter.add(unusedCategoryList.get(i).getCategoryName());
+            spinnerAdapter.add(unusedCategoryList.get(i).getCategoryName());
         }
 
         //add hint to end of adapter
         //adapter.add("Test");
         if(unusedCategoryList.size() > 0) {
-            adapter.add(this.getResources().getString(R.string.spinnerAddCategoryHint));
+            spinnerAdapter.add(this.getResources().getString(R.string.spinnerAddCategoryHint));
         }else {
 
             //display no categories if there are none
-            adapter.add("No Categories");
-            adapter.add("No Categories");
+            spinnerAdapter.add("No Categories");
+            spinnerAdapter.add("No Categories");
         }
 
         //set spinner adapter
-        categorySpinner.setAdapter(adapter);
+        categorySpinner.setAdapter(spinnerAdapter);
 
         //set default selection to hint
-        categorySpinner.setSelection(adapter.getCount());
+        categorySpinner.setSelection(spinnerAdapter.getCount());
 
         // show it
         alertDialog.show();
