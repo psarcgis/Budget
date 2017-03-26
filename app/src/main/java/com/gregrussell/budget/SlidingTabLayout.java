@@ -301,23 +301,14 @@ public class SlidingTabLayout extends HorizontalScrollView {
 
 
             //Place TExt Here
-            /*if(position == 0) {
-                SwipeViews.text.setText("Home");
+            if(position == 0) {
+                SwipeViews.FRAG_TITLE.setText(CurrentBudgetFragment.BUDGET_NAME);
+                SwipeViews.TOP_BAR.setBackgroundColor(CurrentBudgetFragment.TOP_BAR_COLOR);
             }
             else if(position == 1) {
-                SwipeViews.text.setText("Maintenance");
+                SwipeViews.FRAG_TITLE.setText(SlidingTabLayout.this.getResources().getText(R.string.allBudgets));
+                SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             }
-            else if(position == 2) {
-                SwipeViews.text.setText("Mileage");
-            }
-            else if(position == 3) {
-                SwipeViews.text.setText("Vehicles");
-            }
-            else if(position == 4) {
-                SwipeViews.text.setText("Schedule");
-            }*/
-
-
 
 
             for (int i = 0; i < mTabStrip.getChildCount(); i++) {

@@ -57,6 +57,7 @@ public class CurrentBudgetFragment extends Fragment {
     public static List<CategoryObj> unusedCategoryList = new ArrayList<CategoryObj>();
     ViewGroup rootView;
     int spinnerPosition;
+    public static int TOP_BAR_COLOR;
 
     @Override
     public void onResume(){
@@ -89,6 +90,8 @@ public class CurrentBudgetFragment extends Fragment {
         spent = (TextView)rootView.findViewById(R.id.spentValue);
         addCategoryButton = (FloatingActionButton)rootView.findViewById(R.id.addMainActivity);
         addCategoryButton.setVisibility(View.INVISIBLE);
+
+
 
         //setting color for header progress bar
         ProgressBar headerProgress = (ProgressBar) rootView.findViewById(R.id.headerProgress);
@@ -243,19 +246,27 @@ public class CurrentBudgetFragment extends Fragment {
             if(roundTotSpent < roundAllExp){
                 ovUn = "Under";
                 containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                TOP_BAR_COLOR = getResources().getColor(R.color.colorListGreen);
+                SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
                 containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                TOP_BAR_COLOR = getResources().getColor(R.color.colorPrimary);
+                SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             }else {
                 ovUn = "Over";
                 containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                TOP_BAR_COLOR = getResources().getColor(R.color.colorListRed);
+                SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListRed));
             }
 
 
 
 
             //set text of textViews
-            budgetName.setText(BUDGET_NAME);
+            SwipeViews.FRAG_TITLE.setText(BUDGET_NAME);
+            budgetName.setVisibility(View.GONE);
+            //budgetName.setText(BUDGET_NAME);
             projectedExpenses.setText(result[0]);
             spent.setText(result[1]);
             difference.setText(result[2]);

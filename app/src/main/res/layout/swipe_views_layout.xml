@@ -1,8 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/swipeContainer"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/topBarSwipeViews"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/colorPrimary"
+        android:orientation="horizontal">
+
+        <TextView
+
+            android:id="@+id/fragmentTitleSwipeBies"
+            android:layout_marginStart="20dp"
+            android:layout_weight="3"
+            android:layout_gravity="start|center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"/>
+        <ImageView
+            android:layout_weight=".5"
+            android:gravity="end|center_vertical"
+            android:layout_marginTop="10dp"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:src="@drawable/options_icon"/>
+
+
+    </LinearLayout>
+
+
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
@@ -29,6 +59,8 @@
 
 
 
+
+
     </FrameLayout>
 
-</RelativeLayout>
+</LinearLayout>

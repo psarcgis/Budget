@@ -32,6 +32,8 @@ public class SwipeViews extends Activity {
     private static final int NUM_PAGES = 2;
     public static ViewPager mPager;
     private PagerAdapter mPagerAdapter;
+    public static TextView FRAG_TITLE;
+    public static View TOP_BAR;
 
 
     @Override
@@ -48,6 +50,10 @@ public class SwipeViews extends Activity {
         //sliding tab class allows for icon to display which fragment we are on
         SlidingTabLayout slide = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
         slide.setViewPager(mPager);
+
+        FRAG_TITLE = (TextView)findViewById(R.id.fragmentTitleSwipeBies);
+        TOP_BAR = (View)findViewById(R.id.topBarSwipeViews);
+
     }
 
     public class SwipeViewsPagerAdapter extends FragmentStatePagerAdapter {
