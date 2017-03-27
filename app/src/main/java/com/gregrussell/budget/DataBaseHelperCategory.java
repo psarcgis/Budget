@@ -614,7 +614,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         //get sum of all money spent
         double spent;
         cursor = db.rawQuery("SELECT SUM(" + Spending.SPENDING_SPENT + ") FROM " +
-                Spending.SPENDING_TABLE_NAME + " WHERE NOT " + Spending.SPENDING_BUDGET_ID + " = " +
+                Spending.SPENDING_TABLE_NAME + " WHERE " + Spending.SPENDING_BUDGET_ID + " = " +
                 budgetID,null);
         if(cursor.moveToFirst()){
             spent = cursor.getDouble(0);
