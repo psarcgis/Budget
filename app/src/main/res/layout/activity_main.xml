@@ -106,6 +106,8 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/circle_for_header">
 
+
+
                         <LinearLayout
                             android:layout_centerInParent="true"
                             android:layout_width="wrap_content"
