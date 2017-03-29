@@ -445,7 +445,7 @@ public class BudgetListFragment extends Fragment{
                                 if (String.valueOf(editTextBudgetName.getText()).trim().isEmpty()) {
                                     new AlertDialog.Builder(context)
                                             .setTitle("Invalid Budget Name")
-                                            .setMessage("Must enter a name for the new Budget.")
+                                            .setMessage("Must enter a name for the new budget.")
                                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     addBudget();
@@ -501,16 +501,29 @@ public class BudgetListFragment extends Fragment{
         }
 
         @Override
-        protected void onPostExecute(Boolean result){
+        protected void onPostExecute(Boolean added){
 
-            Log.d("AsyncAddBudget", String.valueOf(result));
+            Log.d("AsyncAddBudget", String.valueOf(added));
 
-            AsyncLoadList loadListTask = new AsyncLoadList();
-            loadListTask.execute();
-            AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
-            loadHeader.execute();
-            AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
-            loadList.execute();
+            if(!added){
+                new AlertDialog.Builder(context)
+                        .setTitle("Invalid Budget Name")
+                        .setMessage("The budget name entered already exists. Please enter a unique name.")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                addBudget();
+                            }
+                        })
+                        .show();
+            }else {
+
+                AsyncLoadList loadListTask = new AsyncLoadList();
+                loadListTask.execute();
+                AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
+                loadHeader.execute();
+                AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
+                loadList.execute();
+            }
 
 
         }

@@ -5,18 +5,19 @@
     android:padding="30dp">
     <TextView
         android:paddingBottom="30dp"
-        android:id="@+id/titleAddNewBudget"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/titleRenameBudget"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/addNewBudget"
+        android:text="@string/rename_budget"
         android:textSize="20sp"/>
     <EditText
-        android:id="@+id/editTextAddNewBudget"
+        android:id="@+id/editTextRenameBudget"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textCapWords"
         android:maxLength="50"
         android:hint="@string/hintAddNewBudget"
         android:textSize="14sp"/>
+
 </LinearLayout>

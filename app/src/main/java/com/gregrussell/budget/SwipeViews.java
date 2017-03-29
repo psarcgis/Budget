@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -32,6 +33,7 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -147,6 +149,7 @@ public class SwipeViews extends Activity {
                         return true;
                     case R.id.om0_rename:
                         Log.d("menuClick", "rename");
+                        renameBudgetDialog();
                         return true;
                     case R.id.om0_manage:
                         Log.d("menuClick", "manage");
@@ -216,6 +219,62 @@ public class SwipeViews extends Activity {
                 .show();
     }
 
+    private void renameBudgetDialog(){
+
+        LayoutInflater inflater = SwipeViews.this.getLayoutInflater();
+        View renameBudgetLayout = inflater.inflate(R.layout.rename_budget_dialog,null);
+        final EditText renameBudgetEdit = (EditText)renameBudgetLayout.findViewById(R.id.editTextRenameBudget);
+
+        //create a dialog box to add new category
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(SwipeViews.this);
+
+        //set the layout the dialog uses
+        alertDialogBuilder.setView(renameBudgetLayout);
+
+        //set up dialog
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                if (String.valueOf(renameBudgetEdit.getText()).trim().isEmpty()) {
+                                    new AlertDialog.Builder(SwipeViews.this)
+                                            .setTitle("Invalid Budget Name")
+                                            .setMessage("Must enter a name for the Budget.")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    renameBudgetDialog();
+                                                }
+                                            })
+                                            .show();
+                                }else{
+                                    AsyncEditBudget addBudget = new AsyncEditBudget();
+                                    Calendar c = Calendar.getInstance();
+                                    Timestamp time = new Timestamp(c.getTime().getTime());
+                                    BudgetObj budget = new BudgetObj(CurrentBudgetFragment.currentBudget,
+                                            time, String.valueOf(renameBudgetEdit.getText()).trim());
+                                    addBudget.execute(budget);
+                                }
+                            }
+
+
+
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        alertDialog.show();
+    }
+
     //background task to delete a budget
     private class AsyncDeleteBudget extends AsyncTask<BudgetObj,Void,Boolean> {
         
@@ -278,6 +337,98 @@ public class SwipeViews extends Activity {
         }
 
         myDBHelper.deleteBudget(budget);
+
+    }
+
+
+    //background task to delete a budget
+    private class AsyncEditBudget extends AsyncTask<BudgetObj,Void,Boolean> {
+
+        @Override
+        protected Boolean doInBackground(BudgetObj... params) {
+
+            if(editBudget(params[0])){
+                BudgetListFragment.budgetListItemList = getBudgetList();
+                return true;
+            }else{
+                return false;
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean renamed){
+
+
+            Log.d("editBudget", String.valueOf(renamed));
+
+            //call the dialog again if couldn't rename
+            if(!renamed){
+                new AlertDialog.Builder(SwipeViews.this)
+                        .setTitle("Invalid Budget Name")
+                        .setMessage("The budget name entered already exists. Please enter a unique name.")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                renameBudgetDialog();
+                            }
+                        })
+                        .show();
+            }else {
+
+                //the next newest budget
+                AsyncLoadBudget loadBudget = new AsyncLoadBudget();
+                loadBudget.execute();
+
+                //setting up the adapter for allBudgets listView
+                BudgetListFragment.adapter = new ListViewAdapterAllBudgets(SwipeViews.this, BudgetListFragment.budgetListItemList);
+                BudgetListFragment.adapter.notifyDataSetChanged();
+
+                //setting the adapater onto the listView
+                BudgetListFragment.budgetListView.setAdapter(null);
+                BudgetListFragment.budgetListView.setAdapter(BudgetListFragment.adapter);
+
+                //background tasks to display the current budget
+                AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
+                loadHeader.execute();
+                AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
+                loadList.execute();
+            }
+
+        }
+    }
+
+
+
+    //method called to delete the budget
+    private boolean editBudget(BudgetObj budgetObj){
+
+        myDBHelper = new DataBaseHelperCategory(SwipeViews.this);
+
+        try {
+            myDBHelper.createDataBase();
+        } catch (IOException ioe) {
+            throw new Error("Unable to create database");
+
+        }
+
+        try {
+
+            myDBHelper.openDataBase();
+
+        } catch (SQLException sqle) {
+
+            throw sqle;
+
+        }
+
+        if(myDBHelper.checkBudgetName(budgetObj.getBudgetName())){
+            myDBHelper.updateBudgetName(budgetObj);
+            return true;
+        }
+        else{
+            return false;
+        }
+
 
     }
 
