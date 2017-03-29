@@ -588,6 +588,8 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
     public ListDataObj createListData(int budgetID){
 
+        Log.d("ListDataObj create", String.valueOf(budgetID));
+
         ListDataObj ldo = new ListDataObj();
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1050,7 +1052,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
 
     //get all budgets from budget table and return as list of budgetObjs
-    public List<BudgetObj> getAllBudgets(){
+    private List<BudgetObj> getAllBudgets(){
 
         List<BudgetObj> budgetObjList = new ArrayList<BudgetObj>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1070,7 +1072,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
 
     //get total expenses for each budget and return as list
-    public List<Double> listOfBudgetExpenses(List<BudgetObj> budgetObjList){
+    private List<Double> listOfBudgetExpenses(List<BudgetObj> budgetObjList){
 
         List<Double> budgetExpenseList = new ArrayList<Double>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1089,7 +1091,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
     }
 
     //get total spent for each budget and return as list
-    public List<Double> listOfBudgetSpending(List<BudgetObj> budgetObjList){
+    private List<Double> listOfBudgetSpending(List<BudgetObj> budgetObjList){
 
         List<Double> budgetSpendingList = new ArrayList<Double>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1121,6 +1123,30 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         ContentValues values = new ContentValues();
         values.put(Categories.CATEGORIES_DEFAULT, categoryObj.getDefaultCategory());
         db.update(Categories.CATEGORIES_TABLE_NAME,values,Categories._ID + " = " + categoryObj.getID(),null);
+    }
+
+    public void updateBudgetName(BudgetObj budget){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Budgets.BUDGETS_NAME, budget.getBudgetName());
+        db.update(Budgets.BUDGETS_TABLE_NAME,values,Budgets._ID + " = " + budget.getID(),null);
+        db.update(Spending.SPENDING_TABLE_NAME,values,Spending.SPENDING_BUDGET_ID + " = " + budget.getID(),null);
+        db.update(Earning.EARNING_TABLE_NAME,values,Earning.EARNING_BUDGET_ID + " = " + budget.getID(),null);
+        db.update(Expenses.EXPENSES_TABLE_NAME,values,Expenses.EXPENSES_BUDGET_ID + " = " + budget.getID(),null);
+        db.update(Income.INCOME_TABLE_NAME,values,Income.INCOME_BUDGET_ID + " = " + budget.getID(),null);
+    }
+
+    public void deleteBudget(int budgetID){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        //updating row
+        db.delete(Budgets.BUDGETS_TABLE_NAME, Budgets._ID + " = " + budgetID, null);
+        db.delete(Spending.SPENDING_TABLE_NAME,Spending.SPENDING_BUDGET_ID + " = " + budgetID,null);
+        db.delete(Earning.EARNING_TABLE_NAME,Earning.EARNING_BUDGET_ID + " = " +budgetID,null);
+        db.delete(Expenses.EXPENSES_TABLE_NAME,Expenses.EXPENSES_BUDGET_ID + " = " +budgetID,null);
+        db.delete(Income.INCOME_TABLE_NAME,Income.INCOME_BUDGET_ID + " = " + budgetID,null);
     }
 
 

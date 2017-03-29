@@ -24,9 +24,9 @@
                 android:id="@+id/container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="30dp"
+                android:paddingStart="20dp"
                 android:paddingTop="5dp"
-                android:paddingEnd="30dp"
+                android:paddingEnd="20dp"
                 android:paddingBottom="5dp">
 
                 <TextView

@@ -247,17 +247,24 @@ public class CurrentBudgetFragment extends Fragment {
                 ovUn = "Under";
                 containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
                 TOP_BAR_COLOR = getResources().getColor(R.color.colorListGreen);
-                SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                if(SwipeViews.SWIPE_POSITION == 0) {
+                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                }
+                else SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
                 containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
                 TOP_BAR_COLOR = getResources().getColor(R.color.colorPrimary);
-                SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                if(SwipeViews.SWIPE_POSITION == 0) {
+                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                }
             }else {
                 ovUn = "Over";
                 containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
                 TOP_BAR_COLOR = getResources().getColor(R.color.colorListRed);
-                SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                if(SwipeViews.SWIPE_POSITION == 0) {
+                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                }
             }
 
 

@@ -39,6 +39,9 @@ public class BudgetListFragment extends Fragment{
     Context context;
     ViewGroup rootView;
     FloatingActionButton addBudgetButton;
+    public static ListViewAdapterAllBudgets adapter;
+    public static ListView BUDGET_LIST_VIEW;
+    public static List<BudgetListItemObj> budgetListItemList = new ArrayList<BudgetListItemObj>();
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -67,9 +70,9 @@ public class BudgetListFragment extends Fragment{
     private class AsyncLoadList extends AsyncTask<Void,Void,Boolean> {
 
 
-        ListViewAdapterAllBudgets adapter;
-        ListView budgetListView;
-        List<BudgetListItemObj> budgetListItemList = new ArrayList<BudgetListItemObj>();
+
+
+
 
         @Override
         protected void onPreExecute(){
@@ -99,10 +102,10 @@ public class BudgetListFragment extends Fragment{
 
             Log.d("listView budgetlist", "listViewAdapter set");
 
-            budgetListView.setAdapter(adapter);
+            BUDGET_LIST_VIEW.setAdapter(adapter);
 
             //set listener for list item click
-            budgetListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            BUDGET_LIST_VIEW.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
@@ -140,14 +143,16 @@ public class BudgetListFragment extends Fragment{
             Log.d("budget","time stamp update budget is " + CurrentBudgetFragment.CURRENT_BUDGET);
 
             Log.d("budgetlist lvadapter", "PopulateList method is running yay");
+
             budgetListItemList = myDBHelper.getAllBudgetsList();
+            Log.d("budgetlistonclick", "budgetlistitem " + budgetListItemList.get(0).getBudgetName());
             CurrentBudgetFragment.BUDGET_NAME = budgetListItemList.get(0).getBudgetName();
             Log.d("budgetlist lvadapter", "getallbudgets " + budgetListItemList.size());
 
 
             //set listview adapter
             View view = rootView.findViewById(R.id.listViewFrameAllBudgetsFragment);
-            budgetListView = (ListView)view.findViewById(R.id.listViewAllBudgetsFragment);
+            BUDGET_LIST_VIEW = (ListView)view.findViewById(R.id.listViewAllBudgetsFragment);
             adapter = new ListViewAdapterAllBudgets(context,budgetListItemList);
         }
     }
@@ -188,12 +193,24 @@ public class BudgetListFragment extends Fragment{
             if(roundTotSpent < roundAllExp){
                 ovUn = "Under";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                CurrentBudgetFragment.TOP_BAR_COLOR = getResources().getColor(R.color.colorListGreen);
+                if(SwipeViews.SWIPE_POSITION == 0) {
+                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                }
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                CurrentBudgetFragment.TOP_BAR_COLOR = getResources().getColor(R.color.colorPrimary);
+                if(SwipeViews.SWIPE_POSITION == 0) {
+                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                }
             }else {
                 ovUn = "Over";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                CurrentBudgetFragment.TOP_BAR_COLOR = getResources().getColor(R.color.colorListRed);
+                if(SwipeViews.SWIPE_POSITION == 0) {
+                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                }
             }
 
 
@@ -218,7 +235,7 @@ public class BudgetListFragment extends Fragment{
 
         private String[] populateHeader(){
 
-            Log.d("listDataObj Budget", "Entered PopulateHeader, current budget is " + CurrentBudgetFragment.BUDGET_NAME);
+            Log.d("listDataObj Budget", "Entered PopulateHeader, current budget is " + CurrentBudgetFragment.BUDGET_NAME + " " + CurrentBudgetFragment.CURRENT_BUDGET);
 
             //set unusedcategorylist
             CurrentBudgetFragment.unusedCategoryList.clear();

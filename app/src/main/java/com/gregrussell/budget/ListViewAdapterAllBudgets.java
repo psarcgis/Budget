@@ -125,13 +125,10 @@ public class ListViewAdapterAllBudgets extends BaseAdapter {
         Log.d("listviewadapter","diff is " + diff + "exp is " + exp);
         if(totSpent < exp){
             ovUn = "Under";
-            if(position == 0){
-                difference.setTextColor(context.getResources().getColor(R.color.colorListRed));
-                overUnder.setTextColor(context.getResources().getColor(R.color.colorListRed));
-            }else {
-                difference.setTextColor(context.getResources().getColor(R.color.colorListGreen));
-                overUnder.setTextColor(context.getResources().getColor(R.color.colorListGreen));
-            }
+
+            difference.setTextColor(context.getResources().getColor(R.color.colorListGreen));
+            overUnder.setTextColor(context.getResources().getColor(R.color.colorListGreen));
+
 
         }else if(totSpent == exp){
             ovUn = "Even";
@@ -139,13 +136,10 @@ public class ListViewAdapterAllBudgets extends BaseAdapter {
             overUnder.setTextColor(context.getResources().getColor(R.color.colorPrimary));
         }else {
             ovUn = "Over";
-            if(position == 0){
-                difference.setTextColor(context.getResources().getColor(R.color.colorListGreen));
-                overUnder.setTextColor(context.getResources().getColor(R.color.colorListGreen));
-            }else {
-                difference.setTextColor(context.getResources().getColor(R.color.colorListRed));
-                overUnder.setTextColor(context.getResources().getColor(R.color.colorListRed));
-            }
+
+            difference.setTextColor(context.getResources().getColor(R.color.colorListRed));
+            overUnder.setTextColor(context.getResources().getColor(R.color.colorListRed));
+
         }
 
         Log.d("listviewadapter", "over under is " + ovUn);

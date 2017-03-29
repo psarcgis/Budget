@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/om1_manage"
+        android:title="@string/menu_manage" />
+    <item android:id="@+id/om0_analyze"
+        android:title="@string/menu_analyze" />
+    <item android:id="@+id/om1_about"
+        android:title="@string/menu_about" />
+</menu>

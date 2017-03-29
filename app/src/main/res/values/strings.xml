@@ -18,4 +18,9 @@
     <string name="hintAddNewBudget">Enter Name For Budget</string>
     <string name="addNewBudget">Add New Budget</string>
     <string name="allBudgets">Budgets</string>
+    <string name="menu_delete">Delete</string>
+    <string name="menu_rename">Rename</string>
+    <string name="menu_manage">Manage Categories</string>
+    <string name="menu_about">About</string>
+    <string name="menu_analyze">Analyze</string>
 </resources>
