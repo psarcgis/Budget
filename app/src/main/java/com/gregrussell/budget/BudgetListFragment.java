@@ -40,7 +40,7 @@ public class BudgetListFragment extends Fragment{
     ViewGroup rootView;
     FloatingActionButton addBudgetButton;
     public static ListViewAdapterAllBudgets adapter;
-    public static ListView BUDGET_LIST_VIEW;
+    public static ListView budgetListView;
     public static List<BudgetListItemObj> budgetListItemList = new ArrayList<BudgetListItemObj>();
 
     @Override
@@ -102,17 +102,17 @@ public class BudgetListFragment extends Fragment{
 
             Log.d("listView budgetlist", "listViewAdapter set");
 
-            BUDGET_LIST_VIEW.setAdapter(adapter);
+            budgetListView.setAdapter(adapter);
 
             //set listener for list item click
-            BUDGET_LIST_VIEW.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            budgetListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                     Log.d("onClick budget list", "click " + String.valueOf(position));
                     //On click change current budget
-                    CurrentBudgetFragment.CURRENT_BUDGET = budgetListItemList.get(position).getBudgetID();
-                    Log.d("budgelistonclick", "current budget is " + CurrentBudgetFragment.CURRENT_BUDGET + " " +
+                    CurrentBudgetFragment.currentBudget = budgetListItemList.get(position).getBudgetID();
+                    Log.d("budgelistonclick", "current budget is " + CurrentBudgetFragment.currentBudget + " " +
                     budgetListItemList.get(position).getBudgetName());
                     AsyncLoadList loadList = new AsyncLoadList();
                     loadList.execute();
@@ -139,20 +139,20 @@ public class BudgetListFragment extends Fragment{
             }
             Calendar c = Calendar.getInstance();
             Timestamp time = new Timestamp(c.getTime().getTime());
-            myDBHelper.updateBudgetTimestamp(CurrentBudgetFragment.CURRENT_BUDGET,time);
-            Log.d("budget","time stamp update budget is " + CurrentBudgetFragment.CURRENT_BUDGET);
+            myDBHelper.updateBudgetTimestamp(CurrentBudgetFragment.currentBudget,time);
+            Log.d("budget","time stamp update budget is " + CurrentBudgetFragment.currentBudget);
 
             Log.d("budgetlist lvadapter", "PopulateList method is running yay");
 
             budgetListItemList = myDBHelper.getAllBudgetsList();
             Log.d("budgetlistonclick", "budgetlistitem " + budgetListItemList.get(0).getBudgetName());
-            CurrentBudgetFragment.BUDGET_NAME = budgetListItemList.get(0).getBudgetName();
+            CurrentBudgetFragment.budgetName = budgetListItemList.get(0).getBudgetName();
             Log.d("budgetlist lvadapter", "getallbudgets " + budgetListItemList.size());
 
 
             //set listview adapter
             View view = rootView.findViewById(R.id.listViewFrameAllBudgetsFragment);
-            BUDGET_LIST_VIEW = (ListView)view.findViewById(R.id.listViewAllBudgetsFragment);
+            budgetListView = (ListView)view.findViewById(R.id.listViewAllBudgetsFragment);
             adapter = new ListViewAdapterAllBudgets(context,budgetListItemList);
         }
     }
@@ -193,30 +193,30 @@ public class BudgetListFragment extends Fragment{
             if(roundTotSpent < roundAllExp){
                 ovUn = "Under";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
-                CurrentBudgetFragment.TOP_BAR_COLOR = getResources().getColor(R.color.colorListGreen);
-                if(SwipeViews.SWIPE_POSITION == 0) {
-                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListGreen);
+                if(SwipeViews.swipePosition == 0) {
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
                 }
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                CurrentBudgetFragment.TOP_BAR_COLOR = getResources().getColor(R.color.colorPrimary);
-                if(SwipeViews.SWIPE_POSITION == 0) {
-                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorPrimary);
+                if(SwipeViews.swipePosition == 0) {
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
                 }
             }else {
                 ovUn = "Over";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
-                CurrentBudgetFragment.TOP_BAR_COLOR = getResources().getColor(R.color.colorListRed);
-                if(SwipeViews.SWIPE_POSITION == 0) {
-                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListRed);
+                if(SwipeViews.swipePosition == 0) {
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListRed));
                 }
             }
 
 
             //set text of textViews
-            Log.d("budgetname in header", "budget is " + CurrentBudgetFragment.BUDGET_NAME);
-            CurrentBudgetFragment.budgetName.setText(CurrentBudgetFragment.BUDGET_NAME);
+            Log.d("budgetname in header", "budget is " + CurrentBudgetFragment.budgetName);
+            CurrentBudgetFragment.budgetNameText.setText(CurrentBudgetFragment.budgetName);
             CurrentBudgetFragment.projectedExpenses.setText(result[0]);
             CurrentBudgetFragment.spent.setText(result[1]);
             CurrentBudgetFragment.difference.setText(result[2]);
@@ -235,17 +235,17 @@ public class BudgetListFragment extends Fragment{
 
         private String[] populateHeader(){
 
-            Log.d("listDataObj Budget", "Entered PopulateHeader, current budget is " + CurrentBudgetFragment.BUDGET_NAME + " " + CurrentBudgetFragment.CURRENT_BUDGET);
+            Log.d("listDataObj Budget", "Entered PopulateHeader, current budget is " + CurrentBudgetFragment.budgetName + " " + CurrentBudgetFragment.currentBudget);
 
             //set unusedcategorylist
             CurrentBudgetFragment.unusedCategoryList.clear();
-            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.CURRENT_BUDGET);
+            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.currentBudget);
             for(int i =0; i < CurrentBudgetFragment.unusedCategoryList.size(); i++){
                 Log.d("allCategoriesNotUsed BL", CurrentBudgetFragment.unusedCategoryList.get(i).getCategoryName());
             }
 
 
-            ListDataObj listData = myDBHelper.createListData(CurrentBudgetFragment.CURRENT_BUDGET);
+            ListDataObj listData = myDBHelper.createListData(CurrentBudgetFragment.currentBudget);
 
 
             //Debug logs to check that all data is in the list
@@ -268,7 +268,7 @@ public class BudgetListFragment extends Fragment{
             }
 
             //pass data from list to objects
-            CurrentBudgetFragment.BUDGET_NAME = listData.getBudgetName();
+            CurrentBudgetFragment.budgetName = listData.getBudgetName();
             allExp = listData.getAllExpenses();
             totSpent = listData.getTotalSpent();
             Log.d("populateheader", "listdata spent is " + listData.getTotalSpent());
@@ -402,7 +402,7 @@ public class BudgetListFragment extends Fragment{
         private void PopulateList(){
 
             Log.d("listViewAdapter", "PopulateList method is running yay");
-            listData = myDBHelper.createListData(CurrentBudgetFragment.CURRENT_BUDGET);
+            listData = myDBHelper.createListData(CurrentBudgetFragment.currentBudget);
 
 
             CategoryObj c = new CategoryObj(100, "ReNTs", 0);
@@ -489,7 +489,7 @@ public class BudgetListFragment extends Fragment{
 
             if(myDBHelper.checkBudgetName(budgetName[0])){
 
-                CurrentBudgetFragment.CURRENT_BUDGET = myDBHelper.addBudget(budgetName[0]);
+                CurrentBudgetFragment.currentBudget = myDBHelper.addBudget(budgetName[0]);
 
                 return true;
             }

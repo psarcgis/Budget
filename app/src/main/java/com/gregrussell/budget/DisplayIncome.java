@@ -57,7 +57,7 @@ public class DisplayIncome extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_income);
 
-        Log.d("DisplayIncome", "Current Budget is " + String.valueOf(CurrentBudgetFragment.CURRENT_BUDGET));
+        Log.d("DisplayIncome", "Current Budget is " + String.valueOf(CurrentBudgetFragment.currentBudget));
 
         //initializing for editButton functionality
         inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -162,7 +162,7 @@ public class DisplayIncome extends Activity {
         }
 
         //use myDBHelper to get projected income and return value
-        incomeObj = myDBHelper.getProjectedIncome(CurrentBudgetFragment.CURRENT_BUDGET);
+        incomeObj = myDBHelper.getProjectedIncome(CurrentBudgetFragment.currentBudget);
         myDBHelper.close();
 
         return incomeObj;
@@ -192,7 +192,7 @@ public class DisplayIncome extends Activity {
         }
 
         //use myDBHelper to get projected expense and return value
-        double actualExpense = myDBHelper.getEarnedAmount(CurrentBudgetFragment.CURRENT_BUDGET);
+        double actualExpense = myDBHelper.getEarnedAmount(CurrentBudgetFragment.currentBudget);
         myDBHelper.close();
 
         return actualExpense;
@@ -499,7 +499,7 @@ public class DisplayIncome extends Activity {
 
             //use myDBHelper add earningObj to the Earning table
             myDBHelper.addEarning(earningObj[0]);
-            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.CURRENT_BUDGET);
+            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.currentBudget);
             myDBHelper.close();
             ListViewAdapterEarning adapter = null;
             if(earningObjList != null) {
@@ -571,7 +571,7 @@ public class DisplayIncome extends Activity {
             } catch (SQLException sqle) {
                 throw sqle;
             }
-            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.CURRENT_BUDGET);
+            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.currentBudget);
             myDBHelper.close();
 
             //set listview adapter
@@ -778,7 +778,7 @@ public class DisplayIncome extends Activity {
 
             //use myDBHelper update given earningObj
             myDBHelper.updateEarning(earningObj[0]);
-            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.CURRENT_BUDGET);
+            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.currentBudget);
             myDBHelper.close();
             ListViewAdapterEarning adapter = null;
             if(earningObjList != null) {
@@ -829,7 +829,7 @@ public class DisplayIncome extends Activity {
 
             //use myDBHelper to delete given earningObj
             myDBHelper.deleteEarning(earningObj[0]);
-            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.CURRENT_BUDGET);
+            earningObjList = myDBHelper.getEarningsList(CurrentBudgetFragment.currentBudget);
             myDBHelper.close();
             ListViewAdapterEarning adapter = null;
             if(earningObjList != null) {

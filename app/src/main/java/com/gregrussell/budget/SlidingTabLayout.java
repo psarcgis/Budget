@@ -302,14 +302,14 @@ public class SlidingTabLayout extends HorizontalScrollView {
 
             //Place TExt Here
             if(position == 0) {
-                SwipeViews.SWIPE_POSITION = 0;
-                SwipeViews.FRAG_TITLE.setText(CurrentBudgetFragment.BUDGET_NAME);
-                SwipeViews.TOP_BAR.setBackgroundColor(CurrentBudgetFragment.TOP_BAR_COLOR);
+                SwipeViews.swipePosition = 0;
+                SwipeViews.fragTitle.setText(CurrentBudgetFragment.budgetName);
+                SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
             }
             else if(position == 1) {
-                SwipeViews.SWIPE_POSITION = 1;
-                SwipeViews.FRAG_TITLE.setText(SlidingTabLayout.this.getResources().getText(R.string.allBudgets));
-                SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                SwipeViews.swipePosition = 1;
+                SwipeViews.fragTitle.setText(SlidingTabLayout.this.getResources().getText(R.string.allBudgets));
+                SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             }
 
 

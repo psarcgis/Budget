@@ -7,40 +7,30 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.SQLException;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
-import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
-import android.text.TextWatcher;
 import android.text.style.ImageSpan;
 import android.util.Log;
-import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -53,10 +43,10 @@ public class SwipeViews extends Activity {
     private static final int NUM_PAGES = 2;
     public static ViewPager mPager;
     private PagerAdapter mPagerAdapter;
-    public static TextView FRAG_TITLE;
-    public static View TOP_BAR;
-    public static ImageView OPTIONS_ICON;
-    public static int SWIPE_POSITION;
+    public static TextView fragTitle;
+    public static View topBar;
+    public static ImageView optionsIcon;
+    public static int swipePosition;
     DataBaseHelperCategory myDBHelper;
 
 
@@ -68,7 +58,7 @@ public class SwipeViews extends Activity {
 
         setContentView(R.layout.swipe_views_layout);
 
-        SWIPE_POSITION = 0;
+        swipePosition = 0;
 
         //pager allows for swiping between fragments
         mPager = (ViewPager) findViewById(R.id.pager);
@@ -79,18 +69,18 @@ public class SwipeViews extends Activity {
         SlidingTabLayout slide = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
         slide.setViewPager(mPager);
 
-        FRAG_TITLE = (TextView)findViewById(R.id.fragmentTitleSwipeViews);
-        TOP_BAR = (View)findViewById(R.id.topBarSwipeViews);
-        OPTIONS_ICON = (ImageView)findViewById(R.id.optionsIconSwipeViews);
-        OPTIONS_ICON.setOnClickListener(new View.OnClickListener() {
+        fragTitle = (TextView)findViewById(R.id.fragmentTitleSwipeViews);
+        topBar = (View)findViewById(R.id.topBarSwipeViews);
+        optionsIcon = (ImageView)findViewById(R.id.optionsIconSwipeViews);
+        optionsIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("menuClick", "Swipe position " + String.valueOf(SWIPE_POSITION));
-                if(SWIPE_POSITION ==0) {
-                    showMenuPos0(OPTIONS_ICON);
+                Log.d("menuClick", "Swipe position " + String.valueOf(swipePosition));
+                if(swipePosition ==0) {
+                    showMenuPos0(optionsIcon);
                 }
-                else if(SWIPE_POSITION == 1){
-                    showMenuPos1(OPTIONS_ICON);
+                else if(swipePosition == 1){
+                    showMenuPos1(optionsIcon);
                 }
             }
         });
@@ -226,15 +216,13 @@ public class SwipeViews extends Activity {
                 .show();
     }
 
+    //background task to delete a budget
     private class AsyncDeleteBudget extends AsyncTask<BudgetObj,Void,Boolean> {
-
-
-
-
+        
         @Override
         protected Boolean doInBackground(BudgetObj... params) {
 
-            deleteBudget(CurrentBudgetFragment.CURRENT_BUDGET);
+            deleteBudget(CurrentBudgetFragment.currentBudget);
             BudgetListFragment.budgetListItemList = getBudgetList();
             return true;
         }
@@ -242,14 +230,21 @@ public class SwipeViews extends Activity {
         @Override
         protected void onPostExecute(Boolean deleted){
 
-
+            
             Log.d("deleteBudget", String.valueOf(deleted));
+            //the next newest budget
             AsyncLoadBudget loadBudget = new AsyncLoadBudget();
             loadBudget.execute();
+            
+            //setting up the adapter for allBudgets listView
             BudgetListFragment.adapter = new ListViewAdapterAllBudgets(SwipeViews.this,BudgetListFragment.budgetListItemList);
             BudgetListFragment.adapter.notifyDataSetChanged();
-            BudgetListFragment.BUDGET_LIST_VIEW.setAdapter(null);
-            BudgetListFragment.BUDGET_LIST_VIEW.setAdapter(BudgetListFragment.adapter);
+            
+            //setting the adapater onto the listView
+            BudgetListFragment.budgetListView.setAdapter(null);
+            BudgetListFragment.budgetListView.setAdapter(BudgetListFragment.adapter);
+            
+            //background tasks to display the current budget
             AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
             loadHeader.execute();
             AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
@@ -260,7 +255,7 @@ public class SwipeViews extends Activity {
 
 
 
-
+    //method called to delete the budget
     private void deleteBudget(int budget){
 
         myDBHelper = new DataBaseHelperCategory(SwipeViews.this);
@@ -286,6 +281,7 @@ public class SwipeViews extends Activity {
 
     }
 
+    //method to update list of all budgets used to populate BudgetListFragment
     private List<BudgetListItemObj> getBudgetList(){
 
         return myDBHelper.getAllBudgetsList();
@@ -327,31 +323,31 @@ public class SwipeViews extends Activity {
             if(roundTotSpent < roundAllExp){
                 ovUn = "Under";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
-                CurrentBudgetFragment.TOP_BAR_COLOR = getResources().getColor(R.color.colorListGreen);
-                if(SwipeViews.SWIPE_POSITION == 0) {
-                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListGreen);
+                if(SwipeViews.swipePosition == 0) {
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
                 }
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                CurrentBudgetFragment.TOP_BAR_COLOR = getResources().getColor(R.color.colorPrimary);
-                if(SwipeViews.SWIPE_POSITION == 0) {
-                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorPrimary);
+                if(SwipeViews.swipePosition == 0) {
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
                 }
             }else {
                 ovUn = "Over";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
-                CurrentBudgetFragment.TOP_BAR_COLOR = getResources().getColor(R.color.colorListRed);
-                if(SwipeViews.SWIPE_POSITION == 0) {
-                    SwipeViews.TOP_BAR.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListRed);
+                if(SwipeViews.swipePosition == 0) {
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListRed));
                 }
             }
 
 
             //set text of textViews
-            Log.d("budgetname in header", "budget is " + CurrentBudgetFragment.BUDGET_NAME);
-            if(SWIPE_POSITION == 0) {
-                FRAG_TITLE.setText(CurrentBudgetFragment.BUDGET_NAME);
+            Log.d("budgetname in header", "budget is " + CurrentBudgetFragment.budgetName);
+            if(swipePosition == 0) {
+                fragTitle.setText(CurrentBudgetFragment.budgetName);
             }
             CurrentBudgetFragment.projectedExpenses.setText(result[0]);
             CurrentBudgetFragment.spent.setText(result[1]);
@@ -371,17 +367,17 @@ public class SwipeViews extends Activity {
 
         private String[] populateHeader(){
 
-            Log.d("swipeViews Budget", "Entered PopulateHeader, current budget is " + CurrentBudgetFragment.BUDGET_NAME);
+            Log.d("swipeViews Budget", "Entered PopulateHeader, current budget is " + CurrentBudgetFragment.budgetName);
 
             //set unusedcategorylist
             CurrentBudgetFragment.unusedCategoryList.clear();
-            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.CURRENT_BUDGET);
+            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.currentBudget);
             for(int i =0; i < CurrentBudgetFragment.unusedCategoryList.size(); i++){
                 Log.d("allCategoriesNotUsed BL", CurrentBudgetFragment.unusedCategoryList.get(i).getCategoryName());
             }
 
 
-            ListDataObj listData = myDBHelper.createListData(CurrentBudgetFragment.CURRENT_BUDGET);
+            ListDataObj listData = myDBHelper.createListData(CurrentBudgetFragment.currentBudget);
 
 
             //Debug logs to check that all data is in the list
@@ -404,7 +400,7 @@ public class SwipeViews extends Activity {
             }
 
             //pass data from list to objects
-            CurrentBudgetFragment.BUDGET_NAME = listData.getBudgetName();
+            CurrentBudgetFragment.budgetName = listData.getBudgetName();
             allExp = listData.getAllExpenses();
             totSpent = listData.getTotalSpent();
             Log.d("populateheader", "listdata spent is " + listData.getTotalSpent());
@@ -538,7 +534,7 @@ public class SwipeViews extends Activity {
         private void PopulateList(){
 
             Log.d("listViewAdapter", "PopulateList method is running yay");
-            listData = myDBHelper.createListData(CurrentBudgetFragment.CURRENT_BUDGET);
+            listData = myDBHelper.createListData(CurrentBudgetFragment.currentBudget);
 
 
             CategoryObj c = new CategoryObj(100, "ReNTs", 0);
@@ -610,15 +606,15 @@ public class SwipeViews extends Activity {
             if(recentBudget == -1){
                 createBudget();
             }else {
-                CurrentBudgetFragment.CURRENT_BUDGET = recentBudget;
+                CurrentBudgetFragment.currentBudget = recentBudget;
                 Calendar c = Calendar.getInstance();
                 Timestamp time = new Timestamp(c.getTime().getTime());
-                myDBHelper.updateBudgetTimestamp(CurrentBudgetFragment.CURRENT_BUDGET,time);
+                myDBHelper.updateBudgetTimestamp(CurrentBudgetFragment.currentBudget,time);
 
             }
-            Log.d("loadBudgetSwipeViews", "recent budget is " + CurrentBudgetFragment.CURRENT_BUDGET);
+            Log.d("loadBudgetSwipeViews", "recent budget is " + CurrentBudgetFragment.currentBudget);
             CurrentBudgetFragment.unusedCategoryList.clear();
-            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.CURRENT_BUDGET);
+            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.currentBudget);
             for(int i =0; i < CurrentBudgetFragment.unusedCategoryList.size(); i++){
                 Log.d("allCategoriesNotUsed CB", CurrentBudgetFragment.unusedCategoryList.get(i).getCategoryName());
             }
