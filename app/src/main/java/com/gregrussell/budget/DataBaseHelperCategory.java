@@ -1081,7 +1081,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         for(int i = 0; i < budgetObjList.size(); i++){
             Cursor cursor = db.rawQuery("SELECT SUM(" + Expenses.EXPENSES_ESTIMATE + ") FROM " +
                     Expenses.EXPENSES_TABLE_NAME + " WHERE " + Expenses.EXPENSES_BUDGET_ID + " = " +
-                    budgetObjList.get(0).getID(),null);
+                    budgetObjList.get(i).getID(),null);
             if(cursor.moveToFirst()){
                 budgetExpenseList.add(cursor.getDouble(0));
             }else budgetExpenseList.add(0.00);
@@ -1100,7 +1100,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         for(int i = 0; i < budgetObjList.size(); i++){
             Cursor cursor = db.rawQuery("SELECT SUM(" + Spending.SPENDING_SPENT + ") FROM " +
                     Spending.SPENDING_TABLE_NAME + " WHERE " + Spending.SPENDING_BUDGET_ID + " = " +
-                    budgetObjList.get(0).getID(),null);
+                    budgetObjList.get(i).getID(),null);
             if(cursor.moveToFirst()){
                 budgetSpendingList.add(cursor.getDouble(0));
             }else budgetSpendingList.add(0.00);

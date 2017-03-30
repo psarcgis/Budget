@@ -181,6 +181,7 @@ public class CurrentBudgetFragment extends Fragment {
 
 
             recentBudget = myDBHelper.getMostRecentBudget();
+            Log.d("currentBudget", "recent budget is " + String.valueOf(recentBudget));
             if(recentBudget == -1){
                 createBudget();
             }else {
@@ -204,7 +205,7 @@ public class CurrentBudgetFragment extends Fragment {
 
         private void createBudget(){
 
-            Log.d("createBudget", "Entered Create Budget");
+            Log.d("createBudget", "Entered Create Budget CurrentBudget");
             myDBHelper.addBudget("March 2017");
             LoadBudget();
         }

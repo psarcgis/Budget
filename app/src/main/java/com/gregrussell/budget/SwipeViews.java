@@ -60,6 +60,7 @@ public class SwipeViews extends Activity {
 
         setContentView(R.layout.swipe_views_layout);
 
+        CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorPrimary);
         swipePosition = 0;
 
         //pager allows for swiping between fragments
@@ -754,6 +755,7 @@ public class SwipeViews extends Activity {
 
 
             recentBudget = myDBHelper.getMostRecentBudget();
+
             if(recentBudget == -1){
                 createBudget();
             }else {
@@ -778,7 +780,7 @@ public class SwipeViews extends Activity {
 
         private void createBudget(){
 
-            Log.d("createBudget", "Entered Create Budget");
+            Log.d("createBudget", "Entered Create Budget SwipeViews");
             myDBHelper.addBudget("March 2017");
             LoadBudget();
         }
