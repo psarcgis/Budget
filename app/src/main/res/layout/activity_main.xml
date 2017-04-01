@@ -142,7 +142,7 @@
                 android:id="@+id/headerLoadingPanel"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#00000000"
+                android:background="@color/colorBackgroundList"
                 android:gravity="center" >
 
                 <ProgressBar
@@ -185,7 +185,7 @@
                 android:id="@+id/listLoadingPanel"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#00000000"
+                android:background="@color/colorBackgroundList"
                 android:gravity="center" >
 
                 <ProgressBar

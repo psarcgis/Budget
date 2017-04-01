@@ -50,8 +50,16 @@ public class SwipeViews extends Activity {
     public static ImageView optionsIcon;
     public static int swipePosition;
     DataBaseHelperCategory myDBHelper;
+    ViewGroup swipeViewsLayoutContainer;
 
 
+    @Override
+    protected void onPause(){
+
+        super.onPause();
+
+
+    }
 
 
     @Override
@@ -62,6 +70,7 @@ public class SwipeViews extends Activity {
 
         CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorPrimary);
         swipePosition = 0;
+        swipeViewsLayoutContainer = (ViewGroup)findViewById(R.id.swipeContainer);
 
         //pager allows for swiping between fragments
         mPager = (ViewPager) findViewById(R.id.pager);
@@ -500,6 +509,8 @@ public class SwipeViews extends Activity {
             Log.d("budgetname in header", "budget is " + CurrentBudgetFragment.budgetName);
             if(swipePosition == 0) {
                 fragTitle.setText(CurrentBudgetFragment.budgetName);
+            }else{
+                fragTitle.setText(getResources().getText(R.string.allBudgets));
             }
             CurrentBudgetFragment.projectedExpenses.setText(result[0]);
             CurrentBudgetFragment.spent.setText(result[1]);
@@ -707,19 +718,24 @@ public class SwipeViews extends Activity {
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            LoadBudget();
+            return  LoadBudget();
             //because you have to return something to onPostExecute
-            return null;
+
         }
 
         @Override
         protected void onPostExecute(Boolean result){
 
+            if(!result){
+                CurrentBudgetFragment.listLoadingPanel.setVisibility(View.VISIBLE);
+                CurrentBudgetFragment.headerLoadingPanel.setVisibility(View.VISIBLE);
+                createBudget();
+            }
 
         }
 
 
-        private void LoadBudget(){
+        private boolean LoadBudget(){
 
             Log.d("LoadBudget swipeViews", "made it to load budget");
             //compare most recent spending timestamp and earning timestamp to find most recent budget
@@ -757,19 +773,22 @@ public class SwipeViews extends Activity {
             recentBudget = myDBHelper.getMostRecentBudget();
 
             if(recentBudget == -1){
-                createBudget();
+                return false;
+                //createBudget();
             }else {
                 CurrentBudgetFragment.currentBudget = recentBudget;
                 Calendar c = Calendar.getInstance();
                 Timestamp time = new Timestamp(c.getTime().getTime());
                 myDBHelper.updateBudgetTimestamp(CurrentBudgetFragment.currentBudget,time);
+                Log.d("loadBudgetSwipeViews", "recent budget is " + CurrentBudgetFragment.currentBudget);
+                CurrentBudgetFragment.unusedCategoryList.clear();
+                CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.currentBudget);
+                for(int i =0; i < CurrentBudgetFragment.unusedCategoryList.size(); i++){
+                    Log.d("allCategoriesNotUsed CB", CurrentBudgetFragment.unusedCategoryList.get(i).getCategoryName());
+                }
+                return true;
 
-            }
-            Log.d("loadBudgetSwipeViews", "recent budget is " + CurrentBudgetFragment.currentBudget);
-            CurrentBudgetFragment.unusedCategoryList.clear();
-            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.currentBudget);
-            for(int i =0; i < CurrentBudgetFragment.unusedCategoryList.size(); i++){
-                Log.d("allCategoriesNotUsed CB", CurrentBudgetFragment.unusedCategoryList.get(i).getCategoryName());
+
             }
 
 
@@ -781,8 +800,21 @@ public class SwipeViews extends Activity {
         private void createBudget(){
 
             Log.d("createBudget", "Entered Create Budget SwipeViews");
-            myDBHelper.addBudget("March 2017");
-            LoadBudget();
+            new AlertDialog.Builder(SwipeViews.this)
+                    .setCancelable(false)
+                    .setTitle("No Budgets Found")
+                    .setMessage("Create a budget to continue")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            Intent intent = new Intent(SwipeViews.this,AddBudget.class);
+                            startActivity(intent);
+                        }
+                    })
+
+                    .show();
+            //myDBHelper.addBudget("March 2017");
+            //LoadBudget();
         }
 
 

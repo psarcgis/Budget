@@ -44,6 +44,18 @@ public class BudgetListFragment extends Fragment{
     public static List<BudgetListItemObj> budgetListItemList = new ArrayList<BudgetListItemObj>();
 
     @Override
+    public void onResume(){
+        super.onResume();
+
+        Log.d("BudgetListFragment", "on resume " + SwipeViews.swipePosition);
+        if(SwipeViews.swipePosition == 1) {
+            SwipeViews.fragTitle.setText(getResources().getText(R.string.allBudgets));
+        }
+        AsyncLoadList loadListTask = new AsyncLoadList();
+        loadListTask.execute();
+    }
+
+    @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 
@@ -145,8 +157,13 @@ public class BudgetListFragment extends Fragment{
             Log.d("budgetlist lvadapter", "PopulateList method is running yay");
 
             budgetListItemList = myDBHelper.getAllBudgetsList();
-            Log.d("budgetlistonclick", "budgetlistitem " + budgetListItemList.get(0).getBudgetName());
-            CurrentBudgetFragment.budgetName = budgetListItemList.get(0).getBudgetName();
+            try{Log.d("budgetlistonclick", "budgetlistitem " + budgetListItemList.get(0).getBudgetName());
+                CurrentBudgetFragment.budgetName = budgetListItemList.get(0).getBudgetName();
+            }catch(Exception e){
+                CurrentBudgetFragment.budgetName = "";
+            }
+
+
             Log.d("budgetlist lvadapter", "getallbudgets " + budgetListItemList.size());
 
 
@@ -418,116 +435,9 @@ public class BudgetListFragment extends Fragment{
 
     private void addBudget(){
 
-        /*
-        Bring up Dialog
-        Enter Name of Budget
-        Check budget name doesn't already exist
-        Create Budget
-         */
 
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View addBudgetDialog = inflater.inflate(R.layout.add_new_budget,null);
-        final EditText editTextBudgetName = (EditText)addBudgetDialog.findViewById(R.id.editTextAddNewBudget);
-
-        //create a dialog box to enter new projected expenses
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-
-        // set prompts.xml to alertdialog builder
-        alertDialogBuilder.setView(addBudgetDialog);
-
-        // set dialog message
-        alertDialogBuilder
-                .setCancelable(false)
-                .setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-
-                                if (String.valueOf(editTextBudgetName.getText()).trim().isEmpty()) {
-                                    new AlertDialog.Builder(context)
-                                            .setTitle("Invalid Budget Name")
-                                            .setMessage("Must enter a name for the new budget.")
-                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    addBudget();
-                                                }
-                                            })
-                                            .show();
-                                }else{
-                                    AsyncAddBudget addBudget = new AsyncAddBudget();
-                                    addBudget.execute(String.valueOf(editTextBudgetName.getText()).trim());
-                                }
-
-
-
-                            }
-
-
-                        })
-                .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-
-                                dialog.cancel();
-                            }
-                        });
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-
-        // show it
-        alertDialog.show();
-
-    }
-
-    private class AsyncAddBudget extends AsyncTask<String,Void,Boolean>{
-
-
-        @Override
-        protected Boolean doInBackground(String... budgetName) {
-
-
-            if(myDBHelper.checkBudgetName(budgetName[0])){
-
-                CurrentBudgetFragment.currentBudget = myDBHelper.addBudget(budgetName[0]);
-
-                return true;
-            }
-            else{
-            return false;
-            }
-
-
-        }
-
-        @Override
-        protected void onPostExecute(Boolean added){
-
-            Log.d("AsyncAddBudget", String.valueOf(added));
-
-            if(!added){
-                new AlertDialog.Builder(context)
-                        .setTitle("Invalid Budget Name")
-                        .setMessage("The budget name entered already exists. Please enter a unique name.")
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                addBudget();
-                            }
-                        })
-                        .show();
-            }else {
-
-                AsyncLoadList loadListTask = new AsyncLoadList();
-                loadListTask.execute();
-                AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
-                loadHeader.execute();
-                AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
-                loadList.execute();
-            }
-
-
-        }
-
+        Intent intent = new Intent(context,AddBudget.class);
+        startActivity(intent);
 
     }
 

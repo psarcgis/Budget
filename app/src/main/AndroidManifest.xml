@@ -17,6 +17,7 @@
         </activity>
         <activity android:name=".DisplayCategory"></activity>
         <activity android:name=".DisplayIncome"></activity>
+        <activity android:name=".AddBudget"></activity>
 
     </application>
 

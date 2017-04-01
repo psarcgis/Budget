@@ -45,7 +45,9 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
     //Default Budget Categories
     private static final String income = "Income";
-    private static final String[] categories = {"Rent", "Utilities", "Grocery", "Transportation", "Insurance", "Cell Phone", "Savings", "Restaurants", "Other"};
+    private static final String[] categories = {"Rent", "Utilities", "Groceries", "Transportation",
+            "Insurance", "Phone", "Cable/Internet", "Subscriptions","Restaurants", "Entertainment",
+            "Savings", "Other"};
 
 
     public DataBaseHelperCategory(Context context) {
@@ -385,7 +387,7 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
 
 
 
-    public int addBudget(String budgetName) {
+    public int addBudget(String budgetName, List<CategoryObj> categories) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -397,16 +399,42 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         // Inserting Row
         db.insert(Budgets.BUDGETS_TABLE_NAME, null, values);
 
-        //because a new budget has been created, the expenses table must be populated for this budget
+        //because a new budget has been created, the expenses and income table must be populated
+        // for this budget, and new categories added to categories table
         int mostRecentBudgetID = getMostRecentBudget();
+        addCategories(categories);
         addDefaultIncome(mostRecentBudgetID,budgetName);
-        addDefaultExpenses(mostRecentBudgetID,budgetName);
+        addExpenses(mostRecentBudgetID,budgetName,categories);
 
         return mostRecentBudgetID;
     }
 
+    //add new categories to Categories table
+    private void addCategories(List<CategoryObj> categories){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        //loop through list to find categories with ID of 0 and add to table
+        for(int i = 0; i<categories.size();i++){
+            if(categories.get(i).getID() == 0){
+                values.put(Categories.CATEGORIES_CATEGORY,categories.get(i).getCategoryName());
+                values.put(Categories.CATEGORIES_DEFAULT,categories.get(i).getDefaultCategory());
+
+                //must update the categoryObj to give it an ID
+                long categoryID = db.insert(Categories.CATEGORIES_TABLE_NAME,null,values);
+                CategoryObj category = categories.get(i);
+                category.setID((int)categoryID);
+                categories.set(i,category);
+
+            }
+        }
+
+    }
+
+    //populate the income table for newly created budget
     private void addDefaultIncome(int budgetID, String budgetName){
-        //populate the income table for newly created budget
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
@@ -417,8 +445,28 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         db.insert(Income.INCOME_TABLE_NAME,null,values);
     }
 
+    //populate the expenses table for newly created budget
+    private void addExpenses(int budgetID, String budgetName, List<CategoryObj> categories){
+
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        //loop to add categories in categories list
+        for(int i = 0; i<categories.size();i++) {
+            values.put(Expenses.EXPENSES_BUDGET_ID, budgetID);
+            values.put(Expenses.EXPENSES_BUDGET_NAME, budgetName);
+            values.put(Expenses.EXPENSES_CATEGORY_ID, categories.get(i).getID());
+            values.put(Expenses.EXPENSES_CATEGORY_NAME, categories.get(i).getCategoryName());
+            values.put(Expenses.EXPENSES_ESTIMATE, 0.00);
+            db.insert(Expenses.EXPENSES_TABLE_NAME, null, values);
+        }
+
+    }
+
+    //populate the expenses table for newly created budget
     private void addDefaultExpenses(int budgetID, String budgetName){
-        //populate the expenses table for newly created budget
+
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -600,7 +648,12 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
                 Budgets._ID  + " = " + budgetID,null);
         cursor.moveToFirst();
 
-        String budgetName = cursor.getString(Constants.BUDGETS_NAME_POSITION);
+        String budgetName = "";
+        try {
+            budgetName = cursor.getString(Constants.BUDGETS_NAME_POSITION);
+        }catch (Exception e){
+
+        }
 
 
         //get sum of projected expenses
@@ -1147,6 +1200,50 @@ public class DataBaseHelperCategory extends SQLiteOpenHelper{
         db.delete(Earning.EARNING_TABLE_NAME,Earning.EARNING_BUDGET_ID + " = " +budgetID,null);
         db.delete(Expenses.EXPENSES_TABLE_NAME,Expenses.EXPENSES_BUDGET_ID + " = " +budgetID,null);
         db.delete(Income.INCOME_TABLE_NAME,Income.INCOME_BUDGET_ID + " = " + budgetID,null);
+    }
+
+    //returns list of all default categories
+    public List<CategoryObj> getDefaultCategories(){
+
+        List<CategoryObj> usedList = new ArrayList<CategoryObj>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
+        Categories.CATEGORIES_DEFAULT + " = " + 1,null);
+
+        if(cursor.moveToFirst()){
+            do {
+                CategoryObj categoryObj = new CategoryObj();
+                categoryObj.setID(cursor.getInt(Constants.CATEGORIES_ID_POSITION));
+                categoryObj.setCategoryName(cursor.getString(Constants.CATEGORIES_NAME_POSITION));
+                categoryObj.setDefaultCategory(cursor.getInt(Constants.CATEGORIES_DEFAULT_POSITION));
+
+                usedList.add(categoryObj);
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
+        return usedList;
+    }
+
+    //returns list of categories that aren't default
+    public List<CategoryObj> getOtherCategories(){
+
+        List<CategoryObj> unusedList = new ArrayList<CategoryObj>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + Categories.CATEGORIES_TABLE_NAME + " WHERE " +
+                Categories.CATEGORIES_DEFAULT + " = " + 0,null);
+
+        if(cursor.moveToFirst()){
+            do {
+                CategoryObj categoryObj = new CategoryObj();
+                categoryObj.setID(cursor.getInt(Constants.CATEGORIES_ID_POSITION));
+                categoryObj.setCategoryName(cursor.getString(Constants.CATEGORIES_NAME_POSITION));
+                categoryObj.setDefaultCategory(cursor.getInt(Constants.CATEGORIES_DEFAULT_POSITION));
+
+                unusedList.add(categoryObj);
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
+        return unusedList;
     }
 
 

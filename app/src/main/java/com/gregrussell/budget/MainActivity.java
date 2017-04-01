@@ -244,7 +244,7 @@ public class MainActivity extends Activity {
 
 
             Log.d("CreateBudget", "Entered Create Budget");
-            myDBHelper.addBudget("March 2017");
+            //myDBHelper.addBudget("March 2017");
             LoadBudget();
 
 

@@ -72,6 +72,9 @@
                     android:id="@+id/editTextNameAddCategoryDialog"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:maxLength="25"
+                    android:inputType="textCapWords"
+                    android:imeOptions="actionDone"
                     android:textSize="14sp"
                     android:hint="@string/editTextHintAddCategoryDialog">
                 </EditText>

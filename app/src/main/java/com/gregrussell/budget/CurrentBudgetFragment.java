@@ -58,19 +58,30 @@ public class CurrentBudgetFragment extends Fragment {
     ViewGroup rootView;
     int spinnerPosition;
     public static int topBarColor;
+    public static View listLoadingPanel;
+    public static View headerLoadingPanel;
+    public static AlertDialog.Builder createBudgetBuilder;
+    public static AlertDialog createBudgetDialog;
 
     @Override
     public void onResume(){
 
         super.onResume();
-        Log.d("currentbudget onresume", "on resume");
-        AsyncLoadHeader loadHeader = new AsyncLoadHeader();
-        loadHeader.execute();
+        Log.d("currentbudget onresume", "on resume " + SwipeViews.swipePosition);
+        if(SwipeViews.swipePosition == 1) {
+            SwipeViews.fragTitle.setText(getResources().getText(R.string.allBudgets));
+        }
+        listLoadingPanel = rootView.findViewById(R.id.listLoadingPanel);
+        headerLoadingPanel = rootView.findViewById(R.id.headerLoadingPanel);
+        listLoadingPanel.setVisibility(View.VISIBLE);
+        headerLoadingPanel.setVisibility(View.VISIBLE);
+        AsyncLoadBudget loadBudget = new AsyncLoadBudget();
+        loadBudget.execute();
 
-        AsyncLoadList loadList = new AsyncLoadList();
-        loadList.execute();
 
     }
+
+
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,7 +101,8 @@ public class CurrentBudgetFragment extends Fragment {
         spent = (TextView)rootView.findViewById(R.id.spentValue);
         addCategoryButton = (FloatingActionButton)rootView.findViewById(R.id.addMainActivity);
         addCategoryButton.setVisibility(View.INVISIBLE);
-
+        listLoadingPanel = rootView.findViewById(R.id.listLoadingPanel);
+        headerLoadingPanel = rootView.findViewById(R.id.headerLoadingPanel);
 
 
         //setting color for header progress bar
@@ -102,14 +114,10 @@ public class CurrentBudgetFragment extends Fragment {
         listProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorPrimary)));
 
         //starting each task on a background thread
-        AsyncLoadBudget loadBudget = new AsyncLoadBudget();
-        loadBudget.execute();
+        /*AsyncLoadBudget loadBudget = new AsyncLoadBudget();
+        loadBudget.execute();*/
 
-        AsyncLoadHeader loadHeader = new AsyncLoadHeader();
-        loadHeader.execute();
 
-        AsyncLoadList loadList = new AsyncLoadList();
-        loadList.execute();
 
         //onClickListener for addCategoryButton
         addCategoryButton.setOnClickListener(new View.OnClickListener() {
@@ -133,19 +141,31 @@ public class CurrentBudgetFragment extends Fragment {
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            LoadBudget();
-            //because you have to return something to onPostExecute
-            return null;
+            return LoadBudget();
+
         }
 
         @Override
         protected void onPostExecute(Boolean result){
 
+            if(!result){
+                listLoadingPanel = rootView.findViewById(R.id.listLoadingPanel);
+                headerLoadingPanel = rootView.findViewById(R.id.headerLoadingPanel);
+                listLoadingPanel.setVisibility(View.VISIBLE);
+                headerLoadingPanel.setVisibility(View.VISIBLE);
+                createBudget();
+            }else{
+                AsyncLoadHeader loadHeader = new AsyncLoadHeader();
+                loadHeader.execute();
+                AsyncLoadList loadList = new AsyncLoadList();
+                loadList.execute();
+            }
+
 
         }
 
 
-        private void LoadBudget(){
+        private boolean LoadBudget(){
 
             Log.d("LoadBudget", "made it to load budget");
             //compare most recent spending timestamp and earning timestamp to find most recent budget
@@ -183,19 +203,22 @@ public class CurrentBudgetFragment extends Fragment {
             recentBudget = myDBHelper.getMostRecentBudget();
             Log.d("currentBudget", "recent budget is " + String.valueOf(recentBudget));
             if(recentBudget == -1){
-                createBudget();
+                //createBudget();
+                return false;
             }else {
                 currentBudget = recentBudget;
                 Calendar c = Calendar.getInstance();
                 Timestamp time = new Timestamp(c.getTime().getTime());
                 myDBHelper.updateBudgetTimestamp(currentBudget,time);
+                unusedCategoryList.clear();
+                unusedCategoryList = myDBHelper.getUnusedCategories(currentBudget);
+                for(int i =0; i < unusedCategoryList.size(); i++){
+                    Log.d("allCategoriesNotUsed CB", unusedCategoryList.get(i).getCategoryName());
+                }
+                return true;
 
             }
-            unusedCategoryList.clear();
-            unusedCategoryList = myDBHelper.getUnusedCategories(currentBudget);
-            for(int i =0; i < unusedCategoryList.size(); i++){
-                Log.d("allCategoriesNotUsed CB", unusedCategoryList.get(i).getCategoryName());
-            }
+
 
 
 
@@ -203,14 +226,28 @@ public class CurrentBudgetFragment extends Fragment {
 
         }
 
-        private void createBudget(){
-
-            Log.d("createBudget", "Entered Create Budget CurrentBudget");
-            myDBHelper.addBudget("March 2017");
-            LoadBudget();
-        }
 
 
+    }
+
+    private void createBudget(){
+
+        Log.d("createBudget", "Entered Create Budget CurrentBudget");
+
+        new AlertDialog.Builder(context)
+                .setCancelable(false)
+                .setTitle("No Budgets Found")
+                .setMessage("Create a budget to continue")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        dialog.cancel();
+
+                        Intent intent = new Intent(context,AddBudget.class);
+                        startActivity(intent);
+                    }
+                })
+                .show();
 
     }
 
@@ -272,7 +309,10 @@ public class CurrentBudgetFragment extends Fragment {
 
 
             //set text of textViews
-            SwipeViews.fragTitle.setText(budgetName);
+            if(SwipeViews.swipePosition == 0) {
+                SwipeViews.fragTitle.setText(budgetName);
+            }
+            else SwipeViews.fragTitle.setText(getResources().getText(R.string.allBudgets));
             budgetNameText.setVisibility(View.GONE);
             //budgetNameText.setText(budgetName);
             projectedExpenses.setText(result[0]);
@@ -284,7 +324,6 @@ public class CurrentBudgetFragment extends Fragment {
 
 
             //progress bar is visible by default. Turn invisible once loading is complete
-            View headerLoadingPanel = rootView.findViewById(R.id.headerLoadingPanel);
             headerLoadingPanel.setVisibility(View.INVISIBLE);
 
 
@@ -403,7 +442,7 @@ public class CurrentBudgetFragment extends Fragment {
         @Override
         protected void onPostExecute(Boolean result){
             //progress bar is visible by default. Turn invisible once loading is complete
-            View listLoadingPanel = rootView.findViewById(R.id.listLoadingPanel);
+
             listLoadingPanel.setVisibility(View.INVISIBLE);
             addCategoryButton.setVisibility(View.VISIBLE);
 
@@ -535,11 +574,6 @@ public class CurrentBudgetFragment extends Fragment {
                                             .show();
                                     }else {
                                     CategoryObj categoryObj = unusedCategoryList.get(spinnerPosition);
-                                    int isDefault;
-                                    if (checkBox.isChecked()) {
-                                        isDefault = 1;
-                                    } else isDefault = 0;
-                                    categoryObj.setDefaultCategory(isDefault);
                                     Log.d("existingCategory", categoryObj.getCategoryName());
                                     AsyncAddExistingCategory addExistingCategory = new AsyncAddExistingCategory();
                                     addExistingCategory.execute(categoryObj);
@@ -575,6 +609,7 @@ public class CurrentBudgetFragment extends Fragment {
                 //check radioAddNew, uncheck radioUseExisting, give focus to edit text, make
                 // keyboard appear
                 radioAddNew.setChecked(true);
+                checkBox.setVisibility(View.VISIBLE);
                 radioUseExisting.setChecked(false);
                 categoryNameEditText.requestFocus();
                 InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -586,7 +621,8 @@ public class CurrentBudgetFragment extends Fragment {
             public void onClick(View v) {
 
                 //uncheck radioAddNew, check radioUseExisting take focus from edit text, make
-                // keyboard disappear
+                // keyboard disappear, hide checkbox
+                checkBox.setVisibility(View.INVISIBLE);
                 radioAddNew.setChecked(false);
                 radioUseExisting.setChecked(true);
                 categoryNameEditText.clearFocus();
@@ -601,6 +637,7 @@ public class CurrentBudgetFragment extends Fragment {
                 //check radioAddNew, uncheck radioUseExisting
                 radioAddNew.setChecked(true);
                 radioUseExisting.setChecked(false);
+                checkBox.setVisibility(View.VISIBLE);
             }
         });
         categoryNameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -610,6 +647,7 @@ public class CurrentBudgetFragment extends Fragment {
                     //when gains focus, check radioAddNew, uncheck radioUseExisting
                     radioAddNew.setChecked(true);
                     radioUseExisting.setChecked(false);
+                    checkBox.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -620,6 +658,7 @@ public class CurrentBudgetFragment extends Fragment {
                 //uncheck radioAddNew, check radioUseExisting, take focus from edit text, make
                 // keyboard disappear
                 if(event.getAction() == MotionEvent.ACTION_UP){
+                    checkBox.setVisibility(View.INVISIBLE);
                     radioAddNew.setChecked(false);
                     radioUseExisting.setChecked(true);
                     categoryNameEditText.clearFocus();
