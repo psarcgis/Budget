@@ -25,7 +25,7 @@ public class ListViewAdapterEarning extends BaseAdapter{
     List<EarningObj> earningObjList = new ArrayList<EarningObj>();
     private LayoutInflater inflater;
     Context context;
-    Date previousDate;
+    Date previousDate = null;
 
     public ListViewAdapterEarning(Context context, List<EarningObj> earningObjList){
 
@@ -60,7 +60,7 @@ public class ListViewAdapterEarning extends BaseAdapter{
             currentView = inflater.inflate(R.layout.spending_list_item_layout,parent,false);
         }
 
-        Log.d("ListViewAdapterEarning", "In ListViewAdapterEarning " + earningObjList.size() );
+        Log.d("ListViewAdapterEarning", "In ListViewAdapterEarning " + earningObjList.size() + "previous date " + String.valueOf(previousDate));
 
         //initialize textViews
         TextView dateTextView = (TextView)currentView.findViewById(R.id.dateSpendingListItemLayout);
@@ -77,10 +77,14 @@ public class ListViewAdapterEarning extends BaseAdapter{
         String description = earningObjList.get(position).getDescription();
         Date currentDate = earningObjList.get(position).getDate();
 
-        if(previousDate != null && dateFormat.format(currentDate).equals(dateFormat.format(previousDate))){
+
+        Log.d("ListViewAdapterEarning", "current date " + String.valueOf(currentDate) + "previous date " + String.valueOf(previousDate));
+        if(previousDate != null && dateFormat.format(currentDate).equals(dateFormat.format(previousDate)) && position != 0){
+            Log.d("ListViewAdapterEarning", "if " + dateFormat.format(previousDate) + " " + dateFormat.format(currentDate));
             dateTextView.setVisibility(View.GONE);
         }else{
             previousDate = currentDate;
+            dateTextView.setVisibility(View.VISIBLE);
             dateTextView.setText(dateFormat.format(currentDate));
         }
         spentTextView.setText(fmt.format(spent));

@@ -12,6 +12,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/colorBackgroundList"
+        android:layout_marginBottom="50dp"
         tools:context="com.gregrussell.budget.MainActivity">
 
         <FrameLayout
