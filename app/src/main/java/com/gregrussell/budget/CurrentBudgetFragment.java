@@ -1,26 +1,39 @@
 package com.gregrussell.budget;
 
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.SQLException;
+import android.graphics.BitmapFactory;
 import android.graphics.LightingColorFilter;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.ActionMode;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.Spinner;
@@ -62,6 +75,7 @@ public class CurrentBudgetFragment extends Fragment {
     public static View headerLoadingPanel;
     public static AlertDialog.Builder createBudgetBuilder;
     public static AlertDialog createBudgetDialog;
+    int longClickPos;
 
     @Override
     public void onResume(){
@@ -80,6 +94,8 @@ public class CurrentBudgetFragment extends Fragment {
 
 
     }
+
+
 
 
 
@@ -107,11 +123,11 @@ public class CurrentBudgetFragment extends Fragment {
 
         //setting color for header progress bar
         ProgressBar headerProgress = (ProgressBar) rootView.findViewById(R.id.headerProgress);
-        headerProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorPrimary)));
+        headerProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorListNeutral)));
 
         //setting color for list progress bar
         ProgressBar listProgress = (ProgressBar) rootView.findViewById(R.id.listProgress);
-        listProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorPrimary)));
+        listProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorListNeutral)));
 
         //starting each task on a background thread
         /*AsyncLoadBudget loadBudget = new AsyncLoadBudget();
@@ -283,25 +299,75 @@ public class CurrentBudgetFragment extends Fragment {
 
             if(roundTotSpent < roundAllExp){
                 ovUn = "Under";
-                containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
-                topBarColor = getResources().getColor(R.color.colorListGreen);
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListGreen);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                    SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+                    if(Build.VERSION.SDK_INT >= 21){
+                        Window window = ((Activity)context).getWindow();
+
+                        // clear FLAG_TRANSLUCENT_STATUS flag:
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                        // finally change the color
+                        window.setStatusBarColor(ContextCompat.getColor(context,R.color.colorListGreenDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(),R.mipmap.budget_logo), getResources().getColor(R.color.colorListGreen));
+                        ((Activity)context).setTaskDescription(taskDescription);
+                    }
                 }
-                else SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
-                containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                topBarColor = getResources().getColor(R.color.colorPrimary);
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListNeutral);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                    SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+                    if(Build.VERSION.SDK_INT >= 21){
+                        Window window = ((Activity)context).getWindow();
+
+                        // clear FLAG_TRANSLUCENT_STATUS flag:
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                        // finally change the color
+                        window.setStatusBarColor(ContextCompat.getColor(context,R.color.colorPrimaryDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(),R.mipmap.budget_logo), getResources().getColor(R.color.colorPrimary));
+                        ((Activity)context).setTaskDescription(taskDescription);
+                    }
                 }
             }else {
                 ovUn = "Over";
-                containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
-                topBarColor = getResources().getColor(R.color.colorListRed);
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListRed);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                    SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+                    Log.d("changeColor", "change");
+                    if(Build.VERSION.SDK_INT >= 21){
+
+                        Log.d("changeColor", "change");
+                        Window window = ((Activity)context).getWindow();
+
+                        // clear FLAG_TRANSLUCENT_STATUS flag:
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                        // finally change the color
+                        window.setStatusBarColor(ContextCompat.getColor(context,R.color.colorListRedDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(),R.mipmap.budget_logo), getResources().getColor(R.color.colorListRed));
+                        ((Activity)context).setTaskDescription(taskDescription);
+                    }
                 }
             }
 
@@ -439,6 +505,8 @@ public class CurrentBudgetFragment extends Fragment {
 
 
 
+
+
         @Override
         protected void onPostExecute(Boolean result){
             //progress bar is visible by default. Turn invisible once loading is complete
@@ -477,10 +545,22 @@ public class CurrentBudgetFragment extends Fragment {
             });
 
 
+            registerForContextMenu(listView);
+            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
+                    if(position == 0) {
+                        return true;
+                    }else {
+                        longClickPos = position;
+                        return false;
+                    }
 
+                }
+
+            });
         }
-
         private void PopulateList(){
 
             Log.d("listViewAdapter", "PopulateList method is running yay");
@@ -807,7 +887,26 @@ public class CurrentBudgetFragment extends Fragment {
     }
 
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.category_long_click_menu, menu);
+    }
 
-
-
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.clcm_rename:
+                Log.d("longClickMenuClick", "cbf rename position " + longClickPos);
+                return true;
+            case R.id.clcm_delete:
+                Log.d("longClickMenuClick", "cbf delete position " + longClickPos);
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
 }

@@ -25,4 +25,6 @@
     <string name="menu_analyze">Analyze</string>
     <string name="rename_budget">Rename Budget</string>
     <string name="createBudget">Create Budget</string>
+
+
 </resources>

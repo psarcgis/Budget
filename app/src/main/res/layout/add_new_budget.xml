@@ -6,7 +6,7 @@
     android:focusable="true"
     android:background="@color/colorBackgroundList">
     <LinearLayout
-        android:background="@color/colorPrimary"
+        android:background="@color/colorListNeutral"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:orientation="horizontal">
@@ -44,7 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/colorPrimary"
+            android:background="@color/colorListNeutral"
             android:paddingStart="30dp"
             android:paddingEnd="30dp">
             <EditText

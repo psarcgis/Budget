@@ -1,9 +1,13 @@
 package com.gregrussell.budget;
 
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -11,6 +15,8 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -58,6 +64,8 @@ public class SlidingTabLayout extends HorizontalScrollView {
     private static final int TAB_VIEW_TEXT_SIZE_SP = 12;
 
     private int mTitleOffset;
+
+
 
 
 
@@ -300,16 +308,67 @@ public class SlidingTabLayout extends HorizontalScrollView {
 
 
 
-            //Place TExt Here
+            //Change the color of the top bar, status bar, and recent app view color
             if(position == 0) {
                 SwipeViews.swipePosition = 0;
                 SwipeViews.fragTitle.setText(CurrentBudgetFragment.budgetName);
                 SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+                if(Build.VERSION.SDK_INT >= 21){
+
+                    Window window = ((Activity)getContext()).getWindow();
+
+                    // clear FLAG_TRANSLUCENT_STATUS flag:
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                    // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                    // finally change the color
+                    if(CurrentBudgetFragment.topBarColor == getResources().getColor(R.color.colorListRed)) {
+                        window.setStatusBarColor(ContextCompat.getColor(getContext(), R.color.colorListRedDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(), R.mipmap.budget_logo), getResources().getColor(R.color.colorListRed));
+                        ((Activity)getContext()).setTaskDescription(taskDescription);
+                    }else if(CurrentBudgetFragment.topBarColor == getResources().getColor(R.color.colorListGreen)) {
+                        window.setStatusBarColor(ContextCompat.getColor(getContext(), R.color.colorListGreenDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(), R.mipmap.budget_logo), getResources().getColor(R.color.colorListGreen));
+                        ((Activity)getContext()).setTaskDescription(taskDescription);
+                    }else{
+                        window.setStatusBarColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(), R.mipmap.budget_logo), getResources().getColor(R.color.colorPrimary));
+                        ((Activity)getContext()).setTaskDescription(taskDescription);
+
+                    }
+                }
+
             }
             else if(position == 1) {
                 SwipeViews.swipePosition = 1;
                 SwipeViews.fragTitle.setText(SlidingTabLayout.this.getResources().getText(R.string.allBudgets));
-                SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
+                if(Build.VERSION.SDK_INT >= 21){
+                    Window window = ((Activity)getContext()).getWindow();
+
+                    // clear FLAG_TRANSLUCENT_STATUS flag:
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                    // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                    // finally change the color
+
+                    window.setStatusBarColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
+                    ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                            getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                            getResources(), R.mipmap.budget_logo), getResources().getColor(R.color.colorPrimary));
+                    ((Activity)getContext()).setTaskDescription(taskDescription);
+
+                }
             }
 
 

@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <LinearLayout
-            android:background="@color/colorPrimary"
+            android:background="@color/colorListNeutral"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:orientation="horizontal">
@@ -117,7 +117,7 @@
         app:borderWidth="0dp"
         android:src="@drawable/add_icon_white1"
         app:rippleColor="@color/colorCirclePressed"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/colorListNeutral"
         android:layout_gravity="bottom|end"
         android:clickable="true" />
 </android.support.design.widget.CoordinatorLayout>

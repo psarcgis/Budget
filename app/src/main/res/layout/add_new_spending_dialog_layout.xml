@@ -48,7 +48,7 @@
 
         <EditText
             android:id="@+id/spentAddNewSpendingDialog"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="numberDecimal"
             android:maxLength="10"
@@ -63,11 +63,11 @@
 
     <EditText
         android:id="@+id/descriptionAddNewSpendingDialog"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="3"
         android:maxLength="140"
         android:textSize="14sp"
-        android:inputType="textCapSentences"/>
+        android:inputType="textCapSentences|textMultiLine"/>
 
 </LinearLayout>

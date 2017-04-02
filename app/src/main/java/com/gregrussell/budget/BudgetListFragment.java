@@ -13,7 +13,10 @@ import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -42,6 +45,7 @@ public class BudgetListFragment extends Fragment{
     public static ListViewAdapterAllBudgets adapter;
     public static ListView budgetListView;
     public static List<BudgetListItemObj> budgetListItemList = new ArrayList<BudgetListItemObj>();
+    int longClickPos;
 
     @Override
     public void onResume(){
@@ -216,10 +220,10 @@ public class BudgetListFragment extends Fragment{
                 }
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
-                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorPrimary);
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListNeutral);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
                 }
             }else {
                 ovUn = "Over";
@@ -414,7 +418,11 @@ public class BudgetListFragment extends Fragment{
 
 
 
+
+
         }
+
+
 
         private void PopulateList(){
 
@@ -440,6 +448,16 @@ public class BudgetListFragment extends Fragment{
         startActivity(intent);
 
     }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.category_long_click_menu, menu);
+    }
+
+
 
 
 }

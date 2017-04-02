@@ -2,7 +2,9 @@ package com.gregrussell.budget;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -97,9 +99,7 @@ public class ListViewAdapter extends BaseAdapter{
         double exp = expenseList.get(position);
         double totSpent = spentList.get(position);
         double diff;
-        if(position != 0) {
-            diff = exp - totSpent;
-        }else diff = totSpent - exp;
+        diff = totSpent - exp;
 
         //formatter to convert double under 1000 to currency (only for difference text view)
         DecimalFormat lowFmt = new DecimalFormat("+$#,##0.00;-$#,##0.00");
@@ -115,6 +115,8 @@ public class ListViewAdapter extends BaseAdapter{
         String fmtDiff;
         String ovUn;
 
+        Log.d("listviewadapter","diff is " + diff + "exp is " + exp + " totspent is " + totSpent);
+
         //create shortened format of difference
         if(Math.abs(diff) < 1000){
             fmtDiff = lowFmt.format(diff);
@@ -129,29 +131,45 @@ public class ListViewAdapter extends BaseAdapter{
             fmtDiff = highFmt.format(diff) + "B";
         }
 
-        Log.d("listviewadapter","diff is " + diff + "exp is " + exp);
+        //convert dp value of drawable stroke to pixels
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, context.getResources().getDisplayMetrics());
         if(totSpent < exp){
             ovUn = "Under";
             if(position == 0){
                 difference.setTextColor(context.getResources().getColor(R.color.colorListRed));
                 overUnder.setTextColor(context.getResources().getColor(R.color.colorListRed));
+                //change color of circle border
+                GradientDrawable drawable = (GradientDrawable)currentView.findViewById(R.id.rightSideLayoutItemLayout).getBackground();
+                drawable.setStroke((int)px,context.getResources().getColor(R.color.colorListRed));
             }else {
                 difference.setTextColor(context.getResources().getColor(R.color.colorListGreen));
                 overUnder.setTextColor(context.getResources().getColor(R.color.colorListGreen));
+                GradientDrawable drawable = (GradientDrawable)currentView.findViewById(R.id.rightSideLayoutItemLayout).getBackground();
+                drawable.setStroke((int)px,context.getResources().getColor(R.color.colorListGreen));
             }
 
         }else if(totSpent == exp){
             ovUn = "Even";
-            difference.setTextColor(context.getResources().getColor(R.color.colorPrimary));
-            overUnder.setTextColor(context.getResources().getColor(R.color.colorPrimary));
+            difference.setTextColor(context.getResources().getColor(R.color.colorListNeutral));
+            overUnder.setTextColor(context.getResources().getColor(R.color.colorListNeutral));
+            //change color of circle border
+            GradientDrawable drawable = (GradientDrawable)currentView.findViewById(R.id.rightSideLayoutItemLayout).getBackground();
+            drawable.setStroke((int)px,context.getResources().getColor(R.color.colorListNeutral));
+
         }else {
             ovUn = "Over";
             if(position == 0){
                 difference.setTextColor(context.getResources().getColor(R.color.colorListGreen));
                 overUnder.setTextColor(context.getResources().getColor(R.color.colorListGreen));
+                //change color of circle border
+                GradientDrawable drawable = (GradientDrawable)currentView.findViewById(R.id.rightSideLayoutItemLayout).getBackground();
+                drawable.setStroke((int)px,context.getResources().getColor(R.color.colorListGreen));
             }else {
                 difference.setTextColor(context.getResources().getColor(R.color.colorListRed));
                 overUnder.setTextColor(context.getResources().getColor(R.color.colorListRed));
+                //change color of circle border
+                GradientDrawable drawable = (GradientDrawable)currentView.findViewById(R.id.rightSideLayoutItemLayout).getBackground();
+                drawable.setStroke((int)px,context.getResources().getColor(R.color.colorListRed));
             }
         }
 
