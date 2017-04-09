@@ -22,9 +22,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -269,12 +267,12 @@ public class SwipeViews extends Activity {
                                             })
                                             .show();
                                 }else{
-                                    AsyncEditBudget addBudget = new AsyncEditBudget();
+                                    AsyncEditBudget editBudgetTask = new AsyncEditBudget();
                                     Calendar c = Calendar.getInstance();
                                     Timestamp time = new Timestamp(c.getTime().getTime());
                                     BudgetObj budget = new BudgetObj(CurrentBudgetFragment.currentBudget,
                                             time, String.valueOf(renameBudgetEdit.getText()).trim());
-                                    addBudget.execute(budget);
+                                    editBudgetTask.execute(budget);
                                 }
                             }
 
