@@ -663,7 +663,7 @@ public class MainActivity extends Activity {
         //add hint to end of adapter
         //adapter.add("Test");
         if(unusedCategoryList.size() > 0) {
-            adapter.add(MainActivity.this.getResources().getString(R.string.spinnerAddCategoryHint));
+            adapter.add(MainActivity.this.getResources().getString(R.string.spinner_add_category_hint));
         }else {
 
             //display no categories if there are none

@@ -53,7 +53,7 @@ public class BudgetListFragment extends Fragment{
 
         Log.d("BudgetListFragment", "on resume " + SwipeViews.swipePosition);
         if(SwipeViews.swipePosition == 1) {
-            SwipeViews.fragTitle.setText(getResources().getText(R.string.allBudgets));
+            SwipeViews.fragTitle.setText(getResources().getText(R.string.all_budgets));
         }
         AsyncLoadList loadListTask = new AsyncLoadList();
         loadListTask.execute();
@@ -523,7 +523,7 @@ public class BudgetListFragment extends Fragment{
 
         //set up dialog
         alertDialogBuilder
-                .setCancelable(false)
+                .setCancelable(true)
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {

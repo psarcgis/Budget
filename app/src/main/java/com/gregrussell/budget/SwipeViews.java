@@ -574,7 +574,7 @@ public class SwipeViews extends Activity {
             if(swipePosition == 0) {
                 fragTitle.setText(CurrentBudgetFragment.budgetName);
             }else{
-                fragTitle.setText(getResources().getText(R.string.allBudgets));
+                fragTitle.setText(getResources().getText(R.string.all_budgets));
             }
             CurrentBudgetFragment.projectedExpenses.setText(result[0]);
             CurrentBudgetFragment.spent.setText(result[1]);

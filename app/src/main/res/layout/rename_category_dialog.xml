@@ -6,18 +6,30 @@
     <TextView
         android:paddingBottom="30dp"
         android:layout_gravity="center_horizontal"
-        android:id="@+id/titleRenameBudget"
+        android:id="@+id/titleRenameCategoryDialog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/rename_budget"
+        android:text="@string/title_rename_category"
         android:textSize="20sp"/>
     <EditText
-        android:id="@+id/editTextRenameBudget"
+        android:id="@+id/editTextRenameCategoryDialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textCapWords"
         android:maxLength="50"
-        android:hint="@string/hint_add_new_budget"
+        android:hint="@string/hint_rename_category"
         android:textSize="14sp"/>
+    <RelativeLayout
+        android:layout_marginTop="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <CheckBox
+            android:id="@+id/checkboxRenameCategoryDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/checkbox_rename_category"
+            android:gravity="center_vertical"
+            android:textSize="12sp"/>
+    </RelativeLayout>
 
 </LinearLayout>

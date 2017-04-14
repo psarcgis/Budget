@@ -349,7 +349,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
             }
             else if(position == 1) {
                 SwipeViews.swipePosition = 1;
-                SwipeViews.fragTitle.setText(SlidingTabLayout.this.getResources().getText(R.string.allBudgets));
+                SwipeViews.fragTitle.setText(SlidingTabLayout.this.getResources().getText(R.string.all_budgets));
                 SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
                 if(Build.VERSION.SDK_INT >= 21){
                     Window window = ((Activity)getContext()).getWindow();

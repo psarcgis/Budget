@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20sp"
-        android:text="Rent"/>
+        />
     <TextView
         android:id="@+id/removeCategoryAddBudgetListItem"
         android:layout_centerVertical="true"
@@ -21,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:text="REMOVE"/>
+        android:text="@string/remove"/>
 
 
 </RelativeLayout>

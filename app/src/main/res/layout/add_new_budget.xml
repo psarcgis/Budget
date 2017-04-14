@@ -32,7 +32,7 @@
             android:textStyle="bold"
             android:textColor="#FFFFFF"
             android:typeface="normal"
-            android:text="@string/createBudget"
+            android:text="@string/create_budget"
             android:textSize="20sp"/>
     </LinearLayout>
     <LinearLayout
@@ -54,7 +54,7 @@
                 android:inputType="textCapWords"
                 android:imeOptions="actionDone"
                 android:maxLength="50"
-                android:hint="@string/hintAddNewBudget"
+                android:hint="@string/hint_add_new_budget"
                 android:textSize="20sp"
                 android:padding="5dp"
                 android:background="@drawable/edit_text_light_background"

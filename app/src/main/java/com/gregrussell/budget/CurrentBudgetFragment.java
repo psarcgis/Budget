@@ -76,6 +76,9 @@ public class CurrentBudgetFragment extends Fragment {
     public static AlertDialog.Builder createBudgetBuilder;
     public static AlertDialog createBudgetDialog;
     int longClickPos;
+    ListDataObj listData;
+    int longClickedBudget;
+    boolean renameApplyToAllBudgets;
 
     @Override
     public void onResume(){
@@ -83,7 +86,7 @@ public class CurrentBudgetFragment extends Fragment {
         super.onResume();
         Log.d("currentbudget onresume", "on resume " + SwipeViews.swipePosition);
         if(SwipeViews.swipePosition == 1) {
-            SwipeViews.fragTitle.setText(getResources().getText(R.string.allBudgets));
+            SwipeViews.fragTitle.setText(getResources().getText(R.string.all_budgets));
         }
         listLoadingPanel = rootView.findViewById(R.id.listLoadingPanel);
         headerLoadingPanel = rootView.findViewById(R.id.headerLoadingPanel);
@@ -105,6 +108,8 @@ public class CurrentBudgetFragment extends Fragment {
         context = getActivity();
 
         rootView = (ViewGroup)inflater.inflate(R.layout.activity_main, container, false);
+
+
 
 
 
@@ -378,7 +383,7 @@ public class CurrentBudgetFragment extends Fragment {
             if(SwipeViews.swipePosition == 0) {
                 SwipeViews.fragTitle.setText(budgetName);
             }
-            else SwipeViews.fragTitle.setText(getResources().getText(R.string.allBudgets));
+            else SwipeViews.fragTitle.setText(getResources().getText(R.string.all_budgets));
             budgetNameText.setVisibility(View.GONE);
             //budgetNameText.setText(budgetName);
             projectedExpenses.setText(result[0]);
@@ -399,7 +404,7 @@ public class CurrentBudgetFragment extends Fragment {
         private String[] populateHeader(){
 
             Log.d("listDataObj", "Entered PopulateHeader, current budget is " + currentBudget);
-            ListDataObj listData = myDBHelper.createListData(currentBudget);
+            listData = myDBHelper.createListData(currentBudget);
 
 
             //Debug logs to check that all data is in the list
@@ -485,7 +490,7 @@ public class CurrentBudgetFragment extends Fragment {
 
 
 
-        ListDataObj listData;
+
 
         @Override
         protected void onPreExecute(){
@@ -605,7 +610,7 @@ public class CurrentBudgetFragment extends Fragment {
 
         //set up dialog
         alertDialogBuilder
-                .setCancelable(false)
+                .setCancelable(true)
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -783,7 +788,7 @@ public class CurrentBudgetFragment extends Fragment {
         //add hint to end of adapter
         //adapter.add("Test");
         if(unusedCategoryList.size() > 0) {
-            spinnerAdapter.add(this.getResources().getString(R.string.spinnerAddCategoryHint));
+            spinnerAdapter.add(this.getResources().getString(R.string.spinner_add_category_hint));
         }else {
 
             //display no categories if there are none
@@ -901,12 +906,230 @@ public class CurrentBudgetFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.clcm_rename:
                 Log.d("longClickMenuClick", "cbf rename position " + longClickPos);
+
+                //method to rename category
+
+                renameCategoryDialog();
+
                 return true;
             case R.id.clcm_delete:
                 Log.d("longClickMenuClick", "cbf delete position " + longClickPos);
+
+                //method to delte category
+
                 return true;
             default:
                 return super.onContextItemSelected(item);
         }
     }
+
+    private void renameCategoryDialog(){
+
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View renameCategoryLayout = inflater.inflate(R.layout.rename_category_dialog,null);
+        final EditText renameCategoryEdit = (EditText)renameCategoryLayout.findViewById(R.id.editTextRenameCategoryDialog);
+        final CheckBox renameCategoryCheckBox = (CheckBox)renameCategoryLayout.findViewById(R.id.checkboxRenameCategoryDialog);
+
+        //create a dialog box to add new category
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+        //set the layout the dialog uses
+        alertDialogBuilder.setView(renameCategoryLayout);
+
+        //set up dialog
+        alertDialogBuilder
+                .setCancelable(true)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                if (String.valueOf(renameCategoryEdit.getText()).trim().isEmpty()) {
+                                    new AlertDialog.Builder(context)
+                                            .setTitle("Invalid Budget Name")
+                                            .setMessage("Must enter a name for the Category.")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    renameCategoryDialog();
+                                                }
+                                            })
+                                            .show();
+                                }else{
+                                    AsyncCheckCategory checkCategoryTask = new AsyncCheckCategory();
+
+                                    //get category that was long clicked
+                                    longClickedBudget = listData.getCategoryIDList().get(longClickPos);
+
+                                    CategoryObj category = new CategoryObj();
+
+                                    category.setCategoryName(String.valueOf(renameCategoryEdit.getText()).trim());
+                                    category.setDefaultCategory(0);
+
+                                    checkCategoryTask.execute(category);
+                                }
+                            }
+
+
+
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        alertDialog.show();
+
+    }
+
+    private class AsyncCheckCategory extends AsyncTask<CategoryObj,Void,Integer>{
+
+
+        String categoryName;
+        CategoryObj categoryObj = new CategoryObj();
+
+        @Override
+        protected Integer doInBackground(CategoryObj... category){
+
+            categoryObj = category[0];
+            categoryName = categoryObj.getCategoryName();
+
+            if(myDBHelper.checkGetUnusedCategory(currentBudget,categoryObj)){
+
+                Log.d("renameCategory", "The category exists but not in this budget");
+                return 0;
+            }else{
+                if(myDBHelper.checkCategoryName(categoryObj)) {
+                    Log.d("renameCategory", "The category Name is unique");
+                    return 1;
+                }else{
+                    Log.d("renameCategory", "tried to rename to category already used in the budget");
+                    return 2;
+                }
+            }
+            /*if(myDBHelper.checkCategoryName(categoryObj)){
+
+                //proceed
+
+                if(renameApplyToAllBudgets == false){
+
+                    //does not apply to all, therefore create a new category
+                    CategoryObj newCategoryObj = myDBHelper.addCategory(categoryObj);
+
+                    //add new category, get id
+                    //replace old category id with new category id in expenses and spending table
+                    myDBHelper.renameCategoryForSingleBudget(longClickedBudget,currentBudget,newCategoryObj);
+
+
+                }else{
+                    //edit category using id
+                    myDBHelper.renameCategoryForAllBudgets(categoryObj);
+                }
+                return true;
+            }else{
+                return false;
+            }*/
+        }
+        @Override
+        protected void onPostExecute(Integer result){
+
+            if(result == 0){
+                Log.d("renameCategory", "The category exists but not in this budget");
+                new AlertDialog.Builder(context)
+                        .setTitle("Use Existing Category")
+                        .setMessage("The category name entered already exists. Use existing category?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                AsyncRenameCategory task = new AsyncRenameCategory();
+                                task.execute(renameToExistingCategory(categoryName));
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                renameCategoryDialog();
+                            }
+                        })
+                        .show();
+
+            }else if(result == 1){
+                Log.d("renameCategory", "The category Name is unique");
+                AsyncRenameCategory task = new AsyncRenameCategory();
+                task.execute(categoryObj);
+            }
+            else if (result == 2){
+                Log.d("renameCategory", "tried to rename to category already used in the budget");
+                new AlertDialog.Builder(context)
+                        .setTitle("Invalid Category Name")
+                        .setMessage("The category name is already used.")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                renameCategoryDialog();
+                            }
+                        })
+                        .show();
+            }
+
+            /*if(!result){
+                new AlertDialog.Builder(context)
+                        .setTitle("Invalid Category Name")
+                        .setMessage("The category name entered already exists. Use existing category?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                AsyncRenameCategoryToExisting task = new AsyncRenameCategoryToExisting();
+                                task.execute(renameToExistingCategory(categoryName));
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                renameCategoryDialog();
+                            }
+                        })
+                        .show();
+            }else {
+                AsyncLoadList loadList = new AsyncLoadList();
+                loadList.execute();
+            }*/
+
+
+        }
+
+    }
+
+    private CategoryObj renameToExistingCategory(String categoryName){
+
+
+        Log.d("renameCategory", String.valueOf(categoryName));
+        return  myDBHelper.getCategoryFromName(categoryName);
+
+    }
+
+    private class AsyncRenameCategory extends AsyncTask<CategoryObj,Void,Boolean> {
+
+
+        @Override
+        protected Boolean doInBackground(CategoryObj... category) {
+
+            CategoryObj categoryObj = category[0];
+            //replace old category id with new category id in expenses and spending table
+            Log.d("renameCategory", "Category id " + categoryObj.getID() + " name " + categoryObj.getCategoryName() + " def " + categoryObj.getDefaultCategory());
+            myDBHelper.renameCategoryForSingleBudget(longClickedBudget, currentBudget, categoryObj);
+            return true;
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result){
+
+            AsyncLoadList loadList = new AsyncLoadList();
+            loadList.execute();
+        }
+    }
+
 }

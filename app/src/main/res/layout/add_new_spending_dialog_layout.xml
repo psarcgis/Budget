@@ -44,7 +44,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/dollarSign"/>
+            android:text="@string/dollar_sign"/>
 
         <EditText
             android:id="@+id/spentAddNewSpendingDialog"

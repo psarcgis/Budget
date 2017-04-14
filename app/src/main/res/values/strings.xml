@@ -3,28 +3,32 @@
     <string name="earned">Earned:\u0020</string>
     <string name="projected">Projected:\u0020</string>
     <string name="income">Income</string>
-    <string name="dollarSign">$</string>
+    <string name="dollar_sign">$</string>
     <string name="spent">Spent:\u0020</string>
     <string name="date">Date -\u0020</string>
     <string name="description">Description (optional):</string>
-    <string name="projectedExpenses">Projected Expenses:\u0020</string>
-    <string name="totalSpent">Total Spent:</string>
-    <string name="addNewCategoryDialogText">Add New Category:</string>
-    <string name="useExistingCategoryDialogText">Use Existing Category:</string>
-    <string name="editTextHintAddCategoryDialog">Enter New Category Name:</string>
-    <string name="checkBoxAddCategoryDialog">Make Default</string>
-    <string name="addCategoryTitle">Add New Category</string>
-    <string name="spinnerAddCategoryHint">\"Select Category\"</string>
-    <string name="hintAddNewBudget">Enter Name For Budget</string>
-    <string name="addNewBudget">Add New Budget</string>
-    <string name="allBudgets">Budgets</string>
+    <string name="projected_expenses">Projected Expenses:\u0020</string>
+    <string name="total_spent">Total Spent:</string>
+    <string name="add_new_category_dialog_text">Add New Category:</string>
+    <string name="use_existing_category_dialog_text">Use Existing Category:</string>
+    <string name="edit_text_hint_add_category_dialog">Enter New Category Name</string>
+    <string name="check_box_add_category_dialog">Make Default</string>
+    <string name="add_category_title">Add New Category</string>
+    <string name="spinner_add_category_hint">\"Select Category\"</string>
+    <string name="hint_add_new_budget">Enter Name For Budget</string>
+    <string name="add_new_budget">Add New Budget</string>
+    <string name="all_budgets">Budgets</string>
     <string name="menu_delete">Delete</string>
     <string name="menu_rename">Rename</string>
     <string name="menu_manage">Manage Categories</string>
     <string name="menu_about">About</string>
     <string name="menu_analyze">Analyze</string>
     <string name="rename_budget">Rename Budget</string>
-    <string name="createBudget">Create Budget</string>
+    <string name="create_budget">Create Budget</string>
+    <string name="title_rename_category">Rename Category</string>
+    <string name="hint_rename_category">Enter New Category Name</string>
+    <string name="remove">REMOVE</string>
+    <string name="checkbox_rename_category">Apply Change To All Categories</string>
 
 
 </resources>
