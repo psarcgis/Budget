@@ -20,7 +20,7 @@
             android:paddingTop="17dp"
             android:paddingBottom="17dp"
             android:gravity="start"
-            android:background="?android:attr/selectableItemBackground"/>
+            android:background="?android:attr/selectableItemBackgroundBorderless"/>
         <TextView
             android:id="@+id/titleAddNewBudget"
             android:layout_marginStart="10dp"
@@ -91,7 +91,7 @@
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:src="@drawable/add_icon_white1"
-                        android:background="?android:attr/selectableItemBackground"/>
+                        android:background="?android:attr/selectableItemBackgroundBorderless"/>
                 </RelativeLayout>
             </LinearLayout>
         </LinearLayout>

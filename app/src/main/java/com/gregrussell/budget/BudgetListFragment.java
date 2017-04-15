@@ -13,7 +13,10 @@ import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -39,6 +42,22 @@ public class BudgetListFragment extends Fragment{
     Context context;
     ViewGroup rootView;
     FloatingActionButton addBudgetButton;
+    public static ListViewAdapterAllBudgets adapter;
+    public static ListView budgetListView;
+    public static List<BudgetListItemObj> budgetListItemList = new ArrayList<BudgetListItemObj>();
+    int longClickPos;
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        Log.d("BudgetListFragment", "on resume " + SwipeViews.swipePosition);
+        if(SwipeViews.swipePosition == 1) {
+            SwipeViews.fragTitle.setText(getResources().getText(R.string.all_budgets));
+        }
+        AsyncLoadList loadListTask = new AsyncLoadList();
+        loadListTask.execute();
+    }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -67,9 +86,9 @@ public class BudgetListFragment extends Fragment{
     private class AsyncLoadList extends AsyncTask<Void,Void,Boolean> {
 
 
-        ListViewAdapterAllBudgets adapter;
-        ListView budgetListView;
-        List<BudgetListItemObj> budgetListItemList = new ArrayList<BudgetListItemObj>();
+
+
+
 
         @Override
         protected void onPreExecute(){
@@ -108,8 +127,8 @@ public class BudgetListFragment extends Fragment{
 
                     Log.d("onClick budget list", "click " + String.valueOf(position));
                     //On click change current budget
-                    CurrentBudgetFragment.CURRENT_BUDGET = budgetListItemList.get(position).getBudgetID();
-                    Log.d("budgelistonclick", "current budget is " + CurrentBudgetFragment.CURRENT_BUDGET + " " +
+                    CurrentBudgetFragment.currentBudget = budgetListItemList.get(position).getBudgetID();
+                    Log.d("budgelistonclick", "current budget is " + CurrentBudgetFragment.currentBudget + " " +
                     budgetListItemList.get(position).getBudgetName());
                     AsyncLoadList loadList = new AsyncLoadList();
                     loadList.execute();
@@ -118,6 +137,17 @@ public class BudgetListFragment extends Fragment{
                     AsyncCurrentBudgetLoadList loadCurrentBudgetList = new AsyncCurrentBudgetLoadList();
                     loadCurrentBudgetList.execute();
                 }
+            });
+            registerForContextMenu(budgetListView);
+            budgetListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                    longClickPos = position;
+                    return false;
+
+                }
+
             });
         }
 
@@ -136,12 +166,19 @@ public class BudgetListFragment extends Fragment{
             }
             Calendar c = Calendar.getInstance();
             Timestamp time = new Timestamp(c.getTime().getTime());
-            myDBHelper.updateBudgetTimestamp(CurrentBudgetFragment.CURRENT_BUDGET,time);
-            Log.d("budget","time stamp update budget is " + CurrentBudgetFragment.CURRENT_BUDGET);
+            myDBHelper.updateBudgetTimestamp(CurrentBudgetFragment.currentBudget,time);
+            Log.d("budget","time stamp update budget is " + CurrentBudgetFragment.currentBudget);
 
             Log.d("budgetlist lvadapter", "PopulateList method is running yay");
+
             budgetListItemList = myDBHelper.getAllBudgetsList();
-            CurrentBudgetFragment.BUDGET_NAME = budgetListItemList.get(0).getBudgetName();
+            try{Log.d("budgetlistonclick", "budgetlistitem " + budgetListItemList.get(0).getBudgetName());
+                CurrentBudgetFragment.budgetName = budgetListItemList.get(0).getBudgetName();
+            }catch(Exception e){
+                CurrentBudgetFragment.budgetName = "";
+            }
+
+
             Log.d("budgetlist lvadapter", "getallbudgets " + budgetListItemList.size());
 
 
@@ -188,18 +225,30 @@ public class BudgetListFragment extends Fragment{
             if(roundTotSpent < roundAllExp){
                 ovUn = "Under";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListGreen);
+                if(SwipeViews.swipePosition == 0) {
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                }
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
-                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListNeutral);
+                if(SwipeViews.swipePosition == 0) {
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
+                }
             }else {
                 ovUn = "Over";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListRed);
+                if(SwipeViews.swipePosition == 0) {
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                }
             }
 
 
             //set text of textViews
-            Log.d("budgetname in header", "budget is " + CurrentBudgetFragment.BUDGET_NAME);
-            CurrentBudgetFragment.budgetName.setText(CurrentBudgetFragment.BUDGET_NAME);
+            Log.d("budgetname in header", "budget is " + CurrentBudgetFragment.budgetName);
+            CurrentBudgetFragment.budgetNameText.setText(CurrentBudgetFragment.budgetName);
             CurrentBudgetFragment.projectedExpenses.setText(result[0]);
             CurrentBudgetFragment.spent.setText(result[1]);
             CurrentBudgetFragment.difference.setText(result[2]);
@@ -218,17 +267,17 @@ public class BudgetListFragment extends Fragment{
 
         private String[] populateHeader(){
 
-            Log.d("listDataObj Budget", "Entered PopulateHeader, current budget is " + CurrentBudgetFragment.BUDGET_NAME);
+            Log.d("listDataObj Budget", "Entered PopulateHeader, current budget is " + CurrentBudgetFragment.budgetName + " " + CurrentBudgetFragment.currentBudget);
 
             //set unusedcategorylist
             CurrentBudgetFragment.unusedCategoryList.clear();
-            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.CURRENT_BUDGET);
+            CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.currentBudget);
             for(int i =0; i < CurrentBudgetFragment.unusedCategoryList.size(); i++){
                 Log.d("allCategoriesNotUsed BL", CurrentBudgetFragment.unusedCategoryList.get(i).getCategoryName());
             }
 
 
-            ListDataObj listData = myDBHelper.createListData(CurrentBudgetFragment.CURRENT_BUDGET);
+            ListDataObj listData = myDBHelper.createListData(CurrentBudgetFragment.currentBudget);
 
 
             //Debug logs to check that all data is in the list
@@ -251,7 +300,7 @@ public class BudgetListFragment extends Fragment{
             }
 
             //pass data from list to objects
-            CurrentBudgetFragment.BUDGET_NAME = listData.getBudgetName();
+            CurrentBudgetFragment.budgetName = listData.getBudgetName();
             allExp = listData.getAllExpenses();
             totSpent = listData.getTotalSpent();
             Log.d("populateheader", "listdata spent is " + listData.getTotalSpent());
@@ -380,12 +429,16 @@ public class BudgetListFragment extends Fragment{
 
 
 
+
+
         }
+
+
 
         private void PopulateList(){
 
             Log.d("listViewAdapter", "PopulateList method is running yay");
-            listData = myDBHelper.createListData(CurrentBudgetFragment.CURRENT_BUDGET);
+            listData = myDBHelper.createListData(CurrentBudgetFragment.currentBudget);
 
 
             CategoryObj c = new CategoryObj(100, "ReNTs", 0);
@@ -401,48 +454,103 @@ public class BudgetListFragment extends Fragment{
 
     private void addBudget(){
 
-        /*
-        Bring up Dialog
-        Enter Name of Budget
-        Check budget name doesn't already exist
-        Create Budget
-         */
+
+        Intent intent = new Intent(context,AddBudget.class);
+        startActivity(intent);
+
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.budget_long_click_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.blcm_rename:
+                Log.d("longClickMenuClick", "blf rename position " + longClickPos);
+                renameBudgetDialog();
+                return true;
+            case R.id.blcm_delete:
+                Log.d("longClickMenuClick", "blf delete position " + longClickPos);
+                deleteBudgetDialog();
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+
+
+    private void deleteBudgetDialog(){
+
+        new AlertDialog.Builder(context)
+                .setTitle("Delete Budget")
+                .setMessage("Are you sure you want to permanently delete this budget?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        AsyncDeleteBudget deleteBudgetTask = new AsyncDeleteBudget();
+                        deleteBudgetTask.execute(new BudgetObj());
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+
+                    }
+
+                })
+                .show();
+    }
+
+    private void renameBudgetDialog(){
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View addBudgetDialog = inflater.inflate(R.layout.add_new_budget,null);
-        final EditText editTextBudgetName = (EditText)addBudgetDialog.findViewById(R.id.editTextAddNewBudget);
+        View renameBudgetLayout = inflater.inflate(R.layout.rename_budget_dialog,null);
+        final EditText renameBudgetEdit = (EditText)renameBudgetLayout.findViewById(R.id.editTextRenameBudget);
 
-        //create a dialog box to enter new projected expenses
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+        //create a dialog box to add new category
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
-        // set prompts.xml to alertdialog builder
-        alertDialogBuilder.setView(addBudgetDialog);
+        //set the layout the dialog uses
+        alertDialogBuilder.setView(renameBudgetLayout);
 
-        // set dialog message
+        //set up dialog
         alertDialogBuilder
-                .setCancelable(false)
+                .setCancelable(true)
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
-                                if (String.valueOf(editTextBudgetName.getText()).trim().isEmpty()) {
+                                if (String.valueOf(renameBudgetEdit.getText()).trim().isEmpty()) {
                                     new AlertDialog.Builder(context)
                                             .setTitle("Invalid Budget Name")
-                                            .setMessage("Must enter a name for the new Budget.")
+                                            .setMessage("Must enter a name for the Budget.")
                                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog, int which) {
-                                                    addBudget();
+                                                    renameBudgetDialog();
                                                 }
                                             })
                                             .show();
                                 }else{
-                                    AsyncAddBudget addBudget = new AsyncAddBudget();
-                                    addBudget.execute(String.valueOf(editTextBudgetName.getText()).trim());
+                                    AsyncEditBudget editBudgetTask = new AsyncEditBudget();
+                                    Calendar c = Calendar.getInstance();
+                                    Timestamp time = new Timestamp(c.getTime().getTime());
+
+                                    //get budget that was long clicked
+                                    int longClickedBudget = budgetListItemList.get(longClickPos).getBudgetID();
+                                    BudgetObj budget = new BudgetObj(longClickedBudget,
+                                            time, String.valueOf(renameBudgetEdit.getText()).trim());
+                                    editBudgetTask.execute(budget);
                                 }
-
-
-
                             }
+
 
 
                         })
@@ -457,49 +565,288 @@ public class BudgetListFragment extends Fragment{
         // create alert dialog
         AlertDialog alertDialog = alertDialogBuilder.create();
 
-
-        // show it
         alertDialog.show();
+    }
+
+    //background task to delete a budget
+    private class AsyncDeleteBudget extends AsyncTask<BudgetObj,Void,Boolean> {
+
+        @Override
+        protected Boolean doInBackground(BudgetObj... params) {
+
+            //get budget that was long clicked
+            int longClickedBudget = budgetListItemList.get(longClickPos).getBudgetID();
+
+            deleteBudget(longClickedBudget);
+            BudgetListFragment.budgetListItemList = getBudgetList();
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean deleted){
+
+
+            Log.d("deleteBudget", String.valueOf(deleted));
+            //the next newest budget
+            AsyncLoadBudget loadBudget = new AsyncLoadBudget();
+            loadBudget.execute();
+
+            //setting up the adapter for allBudgets listView
+            BudgetListFragment.adapter = new ListViewAdapterAllBudgets(context,BudgetListFragment.budgetListItemList);
+            BudgetListFragment.adapter.notifyDataSetChanged();
+
+            //setting the adapater onto the listView
+            BudgetListFragment.budgetListView.setAdapter(null);
+            BudgetListFragment.budgetListView.setAdapter(BudgetListFragment.adapter);
+
+            //background tasks to display the current budget
+            AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
+            loadHeader.execute();
+            AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
+            loadList.execute();
+
+        }
+    }
+
+
+
+    //method called to delete the budget
+    private void deleteBudget(int budget){
+
+        myDBHelper = new DataBaseHelperCategory(context);
+
+        try {
+            myDBHelper.createDataBase();
+        } catch (IOException ioe) {
+            throw new Error("Unable to create database");
+
+        }
+
+        try {
+
+            myDBHelper.openDataBase();
+
+        } catch (SQLException sqle) {
+
+            throw sqle;
+
+        }
+
+        myDBHelper.deleteBudget(budget);
 
     }
 
-    private class AsyncAddBudget extends AsyncTask<String,Void,Boolean>{
+
+    //background task to delete a budget
+    private class AsyncEditBudget extends AsyncTask<BudgetObj,Void,Boolean> {
+
+        @Override
+        protected Boolean doInBackground(BudgetObj... params) {
+
+            if(editBudget(params[0])){
+                BudgetListFragment.budgetListItemList = getBudgetList();
+                return true;
+            }else{
+                return false;
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean renamed){
+
+
+            Log.d("editBudget", String.valueOf(renamed));
+
+            //call the dialog again if couldn't rename
+            if(!renamed){
+                new AlertDialog.Builder(context)
+                        .setTitle("Invalid Budget Name")
+                        .setMessage("The budget name entered already exists. Please enter a unique name.")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                renameBudgetDialog();
+                            }
+                        })
+                        .show();
+            }else {
+
+                //the next newest budget
+                AsyncLoadBudget loadBudget = new AsyncLoadBudget();
+                loadBudget.execute();
+
+                //setting up the adapter for allBudgets listView
+                BudgetListFragment.adapter = new ListViewAdapterAllBudgets(context, BudgetListFragment.budgetListItemList);
+                BudgetListFragment.adapter.notifyDataSetChanged();
+
+                //setting the adapater onto the listView
+                BudgetListFragment.budgetListView.setAdapter(null);
+                BudgetListFragment.budgetListView.setAdapter(BudgetListFragment.adapter);
+
+                //background tasks to display the current budget
+                AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
+                loadHeader.execute();
+                AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
+                loadList.execute();
+            }
+
+        }
+    }
+
+
+
+    //method called to delete the budget
+    private boolean editBudget(BudgetObj budgetObj){
+
+        myDBHelper = new DataBaseHelperCategory(context);
+
+        try {
+            myDBHelper.createDataBase();
+        } catch (IOException ioe) {
+            throw new Error("Unable to create database");
+
+        }
+
+        try {
+
+            myDBHelper.openDataBase();
+
+        } catch (SQLException sqle) {
+
+            throw sqle;
+
+        }
+
+        if(myDBHelper.checkBudgetName(budgetObj.getBudgetName())){
+            myDBHelper.updateBudgetName(budgetObj);
+            return true;
+        }
+        else{
+            return false;
+        }
+
+
+    }
+
+    //method to update list of all budgets used to populate BudgetListFragment
+    private List<BudgetListItemObj> getBudgetList(){
+
+        return myDBHelper.getAllBudgetsList();
+
+    }
+
+    private class AsyncLoadBudget extends AsyncTask<Void,Void, Boolean> {
+
+
 
 
         @Override
-        protected Boolean doInBackground(String... budgetName) {
+        protected Boolean doInBackground(Void... params) {
 
-
-            if(myDBHelper.checkBudgetName(budgetName[0])){
-
-                CurrentBudgetFragment.CURRENT_BUDGET = myDBHelper.addBudget(budgetName[0]);
-
-                return true;
-            }
-            else{
-            return false;
-            }
-
+            return  LoadBudget();
+            //because you have to return something to onPostExecute
 
         }
 
         @Override
         protected void onPostExecute(Boolean result){
 
-            Log.d("AsyncAddBudget", String.valueOf(result));
-
-            AsyncLoadList loadListTask = new AsyncLoadList();
-            loadListTask.execute();
-            AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
-            loadHeader.execute();
-            AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
-            loadList.execute();
-
+            if(!result){
+                CurrentBudgetFragment.listLoadingPanel.setVisibility(View.VISIBLE);
+                CurrentBudgetFragment.headerLoadingPanel.setVisibility(View.VISIBLE);
+                createBudget();
+            }
 
         }
 
 
+        private boolean LoadBudget(){
+
+            Log.d("LoadBudget swipeViews", "made it to load budget");
+            //compare most recent spending timestamp and earning timestamp to find most recent budget
+            // to load
+
+            int recentBudget;
+
+            myDBHelper = new DataBaseHelperCategory(context);
+
+            try {
+                myDBHelper.createDataBase();
+            } catch (IOException ioe) {
+                throw new Error("Unable to create database");
+
+            }
+
+            try {
+
+                myDBHelper.openDataBase();
+
+            } catch (SQLException sqle) {
+
+                throw sqle;
+
+            }
+
+
+            //myDBHelper.checkCategoryName(categoryObj);
+
+            //myDBHelper.addCategory("Dating", false);
+
+
+
+
+            recentBudget = myDBHelper.getMostRecentBudget();
+
+            if(recentBudget == -1){
+                return false;
+                //createBudget();
+            }else {
+                CurrentBudgetFragment.currentBudget = recentBudget;
+                Calendar c = Calendar.getInstance();
+                Timestamp time = new Timestamp(c.getTime().getTime());
+                myDBHelper.updateBudgetTimestamp(CurrentBudgetFragment.currentBudget,time);
+                Log.d("loadBudgetSwipeViews", "recent budget is " + CurrentBudgetFragment.currentBudget);
+                CurrentBudgetFragment.unusedCategoryList.clear();
+                CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.currentBudget);
+                for(int i =0; i < CurrentBudgetFragment.unusedCategoryList.size(); i++){
+                    Log.d("allCategoriesNotUsed CB", CurrentBudgetFragment.unusedCategoryList.get(i).getCategoryName());
+                }
+                return true;
+
+
+            }
+
+
+
+
+
+        }
+
+        private void createBudget(){
+
+            Log.d("createBudget", "Entered Create Budget SwipeViews");
+            new AlertDialog.Builder(context)
+                    .setCancelable(false)
+                    .setTitle("No Budgets Found")
+                    .setMessage("Create a budget to continue")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            Intent intent = new Intent(context,AddBudget.class);
+                            startActivity(intent);
+                        }
+                    })
+
+                    .show();
+            //myDBHelper.addBudget("March 2017");
+            //LoadBudget();
+        }
+
+
+
     }
+
+
 
 
 }

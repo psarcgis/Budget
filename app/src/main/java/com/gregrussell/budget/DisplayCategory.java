@@ -60,6 +60,8 @@ public class DisplayCategory extends Activity{
     Calendar myCalendar;
     ExpenseObj expenseObj;
     LayoutInflater inflater;
+    View topLoadingPanel;
+    View listLoadingPanel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +82,11 @@ public class DisplayCategory extends Activity{
         categoryTextView = (TextView)findViewById(R.id.categoryDisplayCategory);
         ImageView backButton = (ImageView) findViewById(R.id.backButtonDisplayCategory);
         FloatingActionButton addButton = (FloatingActionButton)findViewById(R.id.addDisplayCategory);
+        topLoadingPanel = findViewById(R.id.topLoadingPanelDisplayCategory);
+        listLoadingPanel = findViewById(R.id.listLoadingPanelDisplayCategory);
+
+        topLoadingPanel.setVisibility(View.VISIBLE);
+        listLoadingPanel.setVisibility(View.VISIBLE);
 
         //set button functionality
         final ImageView editButtonProjected = (ImageView)findViewById(R.id.editProjectedDisplayCategory);
@@ -152,6 +159,11 @@ public class DisplayCategory extends Activity{
 
     private class AsyncLoadProjectedAndActual extends AsyncTask<Void,Void,String[]>{
 
+        @Override
+        protected void onPreExecute(){
+            topLoadingPanel.setVisibility(View.VISIBLE);
+        }
+
 
         @Override
         protected String[] doInBackground(Void... params) {
@@ -177,6 +189,7 @@ public class DisplayCategory extends Activity{
 
             projected.setText((numbers[0]));
             actual.setText(numbers[1] + " (" + numbers[2] + ")");
+            topLoadingPanel.setVisibility(View.GONE);
         }
     }
 
@@ -198,7 +211,7 @@ public class DisplayCategory extends Activity{
         }
 
         //use myDBHelper to get projected expense object and return
-        expenseObj = myDBHelper.getProjectedExpenseForCategory(categoryID, CurrentBudgetFragment.CURRENT_BUDGET);
+        expenseObj = myDBHelper.getProjectedExpenseForCategory(categoryID, CurrentBudgetFragment.currentBudget);
         Log.d("expense", String.valueOf(expenseObj));
         myDBHelper.close();
         return expenseObj;
@@ -220,7 +233,7 @@ public class DisplayCategory extends Activity{
         }
 
         //use myDBHelper to get projected expense and return value
-        double actualExpense = myDBHelper.getSpentAmountForCategory(categoryID, CurrentBudgetFragment.CURRENT_BUDGET);
+        double actualExpense = myDBHelper.getSpentAmountForCategory(categoryID, CurrentBudgetFragment.currentBudget);
         myDBHelper.close();
 
         return actualExpense;
@@ -511,7 +524,7 @@ public class DisplayCategory extends Activity{
 
             //use myDBHelper add spendingObj to the Spending table
             myDBHelper.addSpending(spendingObj[0]);
-            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.CURRENT_BUDGET, categoryID);
+            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.currentBudget, categoryID);
             myDBHelper.close();
             ListViewAdapterSpending adapter = null;
             if(spendingObjList != null) {
@@ -544,6 +557,11 @@ public class DisplayCategory extends Activity{
 
         List<SpendingObj> spendingObjList;
 
+        @Override
+        protected void onPreExecute(){
+            listLoadingPanel.setVisibility(View.VISIBLE);
+        }
+
 
         @Override
         protected ListViewAdapterSpending doInBackground(Void... params) {
@@ -562,6 +580,7 @@ public class DisplayCategory extends Activity{
                     clickedSpending(spendingObjList.get(position));
                 }
             });
+            listLoadingPanel.setVisibility(View.GONE);
             AsyncLoadProjectedAndActual task = new AsyncLoadProjectedAndActual();
             task.execute();
         }
@@ -582,7 +601,7 @@ public class DisplayCategory extends Activity{
             } catch (SQLException sqle) {
                 throw sqle;
             }
-            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.CURRENT_BUDGET,categoryID);
+            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.currentBudget,categoryID);
             myDBHelper.close();
 
             //set listview adapter
@@ -792,7 +811,7 @@ public class DisplayCategory extends Activity{
 
             //use myDBHelper update given spendingObj
             myDBHelper.updateSpending(spendingObj[0]);
-            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.CURRENT_BUDGET, categoryID);
+            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.currentBudget, categoryID);
             myDBHelper.close();
             ListViewAdapterSpending adapter = null;
             if(spendingObjList != null) {
@@ -843,7 +862,7 @@ public class DisplayCategory extends Activity{
 
             //use myDBHelper to delete given spendingObj
             myDBHelper.deleteSpending(spendingObj[0]);
-            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.CURRENT_BUDGET, categoryID);
+            spendingObjList = myDBHelper.getSpendingsByCategory(CurrentBudgetFragment.currentBudget, categoryID);
             myDBHelper.close();
             ListViewAdapterSpending adapter = null;
             if(spendingObjList != null) {

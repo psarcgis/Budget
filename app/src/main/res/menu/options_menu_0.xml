@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/om0_delete"
+        android:title="@string/menu_delete" />
+    <item android:id="@+id/om0_rename"
+        android:title="@string/menu_rename" />
+    <item android:id="@+id/om0_manage"
+        android:title="@string/menu_manage" />
+    <item android:id="@+id/om0_analyze"
+        android:title="@string/menu_analyze" />
+    <item android:id="@+id/om0_about"
+        android:title="@string/menu_about" />
+</menu>

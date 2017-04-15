@@ -77,7 +77,7 @@ public class ListViewAdapterSpending extends BaseAdapter {
 
         Date currentDate = spendingObjList.get(position).getDate();
 
-        if(previousDate != null && dateFormat.format(currentDate).equals(dateFormat.format(previousDate))){
+        if(previousDate != null && dateFormat.format(currentDate).equals(dateFormat.format(previousDate))&& position != 0){
             dateTextView.setVisibility(View.GONE);
         }else{
             previousDate = currentDate;

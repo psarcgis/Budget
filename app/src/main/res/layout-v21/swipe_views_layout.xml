@@ -29,7 +29,8 @@
             android:layout_height="20dp"
             android:src="@drawable/options_dots_icon"
             android:clickable="true"
-            android:background="?android:attr/selectableItemBackground"/>
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            />
 
 
 
