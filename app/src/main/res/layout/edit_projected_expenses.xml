@@ -36,11 +36,11 @@
 
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/dollarSign"/>
+                android:text="@string/dollar_sign"/>
 
             <EditText
                 android:id="@+id/editTextEditProjectedExpenses"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
                 android:maxLength="10"

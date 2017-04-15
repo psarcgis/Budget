@@ -12,6 +12,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/colorBackgroundList"
+        android:layout_marginBottom="50dp"
         tools:context="com.gregrussell.budget.MainActivity">
 
         <FrameLayout
@@ -24,9 +25,9 @@
                 android:id="@+id/container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="30dp"
+                android:paddingStart="20dp"
                 android:paddingTop="5dp"
-                android:paddingEnd="30dp"
+                android:paddingEnd="20dp"
                 android:paddingBottom="5dp">
 
                 <TextView
@@ -63,7 +64,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textStyle="bold"
-                                android:text="@string/projectedExpenses"
+                                android:text="@string/projected_expenses"
                                 android:textColor="@color/colorLightText"/>
                             <TextView
                                 android:id="@+id/projectedValue"
@@ -80,7 +81,7 @@
                                 android:id="@+id/spent"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/totalSpent"
+                                android:text="@string/total_spent"
                                 android:textStyle="bold"
                                 android:textColor="@color/colorLightText"/>
                             <TextView
@@ -142,7 +143,7 @@
                 android:id="@+id/headerLoadingPanel"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#00000000"
+                android:background="@color/colorBackgroundList"
                 android:gravity="center" >
 
                 <ProgressBar
@@ -185,7 +186,7 @@
                 android:id="@+id/listLoadingPanel"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#00000000"
+                android:background="@color/colorBackgroundList"
                 android:gravity="center" >
 
                 <ProgressBar
@@ -210,7 +211,7 @@
         app:borderWidth="0dp"
         android:src="@drawable/add_icon_white1"
         app:rippleColor="@color/colorCirclePressed"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/colorListNeutral"
         android:layout_gravity="bottom|end"
         android:clickable="true" />
 
