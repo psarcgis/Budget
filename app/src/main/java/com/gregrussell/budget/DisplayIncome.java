@@ -48,6 +48,8 @@ public class DisplayIncome extends Activity {
     Calendar myCalendar;
     IncomeObj incomeObj;
     LayoutInflater inflater;
+    View topLoadingPanel;
+    View listLoadingPanel;
 
 
 
@@ -70,6 +72,11 @@ public class DisplayIncome extends Activity {
         categoryTextView.setText(getResources().getText(R.string.income));
         ImageView backButton = (ImageView) findViewById(R.id.backButtonDisplayIncome);
         FloatingActionButton addButton = (FloatingActionButton)findViewById(R.id.addDisplayIncome);
+        topLoadingPanel = findViewById(R.id.topLoadingPanelDisplayIncome);
+        listLoadingPanel = findViewById(R.id.listLoadingPanelDisplayIncome);
+
+        topLoadingPanel.setVisibility(View.VISIBLE);
+        listLoadingPanel.setVisibility(View.VISIBLE);
 
         //set button functionality
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -112,6 +119,11 @@ public class DisplayIncome extends Activity {
     private class AsyncLoadProjectedAndActual extends AsyncTask<Void,Void,String[]>{
 
         @Override
+        protected void onPreExecute(){
+            topLoadingPanel.setVisibility(View.VISIBLE);
+        }
+
+        @Override
         protected String[] doInBackground(Void... params) {
 
             //get projected expense and actual expenses
@@ -134,7 +146,7 @@ public class DisplayIncome extends Activity {
 
             projected.setText(numbers[0]);
             actual.setText(numbers[1]);
-
+            topLoadingPanel.setVisibility(View.GONE);
         }
     }
 
@@ -198,156 +210,6 @@ public class DisplayIncome extends Activity {
         return actualExpense;
 
     }
-
-
-    //Classes no longer used
-
-    /*private class AsyncEditProjectedIncome extends AsyncTask<Double,Void,Double>{
-
-            @Override      protected Double doInBackground(Double... projectedAmount) {
-
-
-
-            //get the expense object
-            incomeObj = projectedIncome();
-
-            //update the expense object's Spent param with projectedAmountString
-            incomeObj.setIncome(projectedAmount[0]);
-
-            Log.d("displaycategory", "projectedamountstring is " + projectedAmount[0] +
-                    "expenseObj cat is "  + " expenseobj cat id is " +
-                    " expenseobj id is " +incomeObj.getID());
-
-            //open the database
-            myDBHelper = new DataBaseHelperCategory(DisplayIncome.this);
-
-            try {
-                myDBHelper.createDataBase();
-            } catch (IOException ioe) {
-                throw new Error("Unable to create database");
-
-            }
-
-            try {
-
-                myDBHelper.openDataBase();
-
-            } catch (SQLException sqle) {
-
-                throw sqle;
-
-            }
-
-            int i = myDBHelper.updateIncome(incomeObj);
-            Log.d("displaycategory", "updated row is " + i);
-            myDBHelper.close();
-
-            return null;
-
-
-        }
-
-        @Override
-        protected void onPostExecute(Double newProjectedExpenses) {
-
-            AsyncLoadProjectedAndActual task = new AsyncLoadProjectedAndActual();
-            task.execute();
-
-
-
-        }
-
-    }*/
-
-    /*private void editProjectedIncome(){
-
-        final View editExpensesDialog = inflater.inflate(R.layout.edit_projected_income,null);
-        projectedEditText = (EditText)editExpensesDialog.findViewById(R.id.editTextEditProjectedIncome);
-
-        //create a dialog box to enter new projected expenses
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(DisplayIncome.this);
-
-        // set prompts.xml to alertdialog builder
-        alertDialogBuilder.setView(editExpensesDialog);
-
-        // set dialog message
-        alertDialogBuilder
-                .setCancelable(false)
-                .setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-
-                                String editTextString = String.valueOf(projectedEditText.getText());
-                                double editTextDouble;
-
-                                //checks if input is a double, and updates projected expenses if it is
-                                try{
-                                    editTextDouble = Double.parseDouble(editTextString);
-                                    //currency formatter
-                                    NumberFormat fmt = NumberFormat.getCurrencyInstance();
-                                    projected.setText(fmt.format(editTextDouble));
-                                    AsyncEditProjectedIncome task = new AsyncEditProjectedIncome();
-                                    //call task to update table with user inputed value
-                                    task.execute(editTextDouble);
-
-                                }catch (Exception e){
-                                    e.printStackTrace();
-                                    editProjectedIncome();
-                                }
-                            }
-
-
-                        })
-                .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-
-                                dialog.cancel();
-                            }
-                        });
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        //TextWatcher to prevent user from inputting more than 2 digits after the decimal
-        TextWatcher textWatcher = new TextWatcher() {
-            int decimal;
-            String afterDecimal;
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                Log.d("onTextChanged", afterDecimal + "decimal is " + String.valueOf(decimal));
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                //if there is a decimal, get string of digits following decimal
-                decimal = s.toString().indexOf(".");
-                if(decimal >= 0) {
-                    afterDecimal = s.toString().substring(decimal + 1);
-                }
-                Log.d("onTextChanged", afterDecimal + "decimal is " + String.valueOf(decimal));
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-                //prevent more than two digits being added after decimal
-                if(afterDecimal != null && afterDecimal.length() > 2){
-                    s = new SpannableStringBuilder(s.toString().substring(0,decimal+3));
-                    projectedEditText.setText(s.toString());
-                }
-                Log.d("afterTextChanged", s.toString());
-            }
-        };
-
-        projectedEditText.addTextChangedListener(textWatcher);
-
-        // show it
-        alertDialog.show();
-    }*/
 
     public void addNewEarning(){
 
@@ -533,6 +395,11 @@ public class DisplayIncome extends Activity {
 
         List<EarningObj> earningObjList;
 
+        @Override
+        protected void onPreExecute(){
+            listLoadingPanel.setVisibility(View.VISIBLE);
+        }
+
 
         @Override
         protected ListViewAdapterEarning doInBackground(Void... params) {
@@ -551,6 +418,7 @@ public class DisplayIncome extends Activity {
                     clickedEarning(earningObjList.get(position));
                 }
             });
+            listLoadingPanel.setVisibility(View.GONE);
             AsyncLoadProjectedAndActual task = new AsyncLoadProjectedAndActual();
             task.execute();
         }
@@ -856,5 +724,132 @@ public class DisplayIncome extends Activity {
             task.execute();
         }
     }
-
 }
+
+//Classes no longer used
+
+    /*private class AsyncEditProjectedIncome extends AsyncTask<Double,Void,Double>{
+
+            @Override
+            protected Double doInBackground(Double... projectedAmount) {
+
+            //get the expense object
+            incomeObj = projectedIncome();
+
+            //update the expense object's Spent param with projectedAmountString
+            incomeObj.setIncome(projectedAmount[0]);
+            Log.d("displaycategory", "projectedamountstring is " + projectedAmount[0] +
+                    "expenseObj cat is "  + " expenseobj cat id is " +
+                    " expenseobj id is " +incomeObj.getID());
+
+            //open the database
+            myDBHelper = new DataBaseHelperCategory(DisplayIncome.this);
+            try {
+                myDBHelper.createDataBase();
+            } catch (IOException ioe) {
+                throw new Error("Unable to create database");
+            }
+            try {
+                myDBHelper.openDataBase();
+            } catch (SQLException sqle) {
+                throw sqle;
+            }
+            int i = myDBHelper.updateIncome(incomeObj);
+            Log.d("displaycategory", "updated row is " + i);
+            myDBHelper.close();
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Double newProjectedExpenses) {
+
+            AsyncLoadProjectedAndActual task = new AsyncLoadProjectedAndActual();
+            task.execute();
+        }
+    }*/
+
+    /*private void editProjectedIncome(){
+
+        final View editExpensesDialog = inflater.inflate(R.layout.edit_projected_income,null);
+        projectedEditText = (EditText)editExpensesDialog.findViewById(R.id.editTextEditProjectedIncome);
+
+        //create a dialog box to enter new projected expenses
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(DisplayIncome.this);
+
+        // set prompts.xml to alertdialog builder
+        alertDialogBuilder.setView(editExpensesDialog);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                String editTextString = String.valueOf(projectedEditText.getText());
+                                double editTextDouble;
+
+                                //checks if input is a double, and updates projected expenses if it is
+                                try{
+                                    editTextDouble = Double.parseDouble(editTextString);
+                                    //currency formatter
+                                    NumberFormat fmt = NumberFormat.getCurrencyInstance();
+                                    projected.setText(fmt.format(editTextDouble));
+                                    AsyncEditProjectedIncome task = new AsyncEditProjectedIncome();
+                                    //call task to update table with user inputed value
+                                    task.execute(editTextDouble);
+
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                    editProjectedIncome();
+                                }
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        //TextWatcher to prevent user from inputting more than 2 digits after the decimal
+        TextWatcher textWatcher = new TextWatcher() {
+            int decimal;
+            String afterDecimal;
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                Log.d("onTextChanged", afterDecimal + "decimal is " + String.valueOf(decimal));
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                //if there is a decimal, get string of digits following decimal
+                decimal = s.toString().indexOf(".");
+                if(decimal >= 0) {
+                    afterDecimal = s.toString().substring(decimal + 1);
+                }
+                Log.d("onTextChanged", afterDecimal + "decimal is " + String.valueOf(decimal));
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+                //prevent more than two digits being added after decimal
+                if(afterDecimal != null && afterDecimal.length() > 2){
+                    s = new SpannableStringBuilder(s.toString().substring(0,decimal+3));
+                    projectedEditText.setText(s.toString());
+                }
+                Log.d("afterTextChanged", s.toString());
+            }
+        };
+
+        projectedEditText.addTextChangedListener(textWatcher);
+
+        // show it
+        alertDialog.show();
+    }*/

@@ -95,11 +95,11 @@ public class MainActivity extends Activity {
 
         //setting color for header progress bar
         ProgressBar headerProgress = (ProgressBar) findViewById(R.id.headerProgress);
-        headerProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorPrimary)));
+        headerProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorListNeutral)));
 
         //setting color for list progress bar
         ProgressBar listProgress = (ProgressBar) findViewById(R.id.listProgress);
-        listProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorPrimary)));
+        listProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorListNeutral)));
 
         //starting each task on a background thread
         AsyncLoadBudget loadBudget = new AsyncLoadBudget();
@@ -290,7 +290,7 @@ public class MainActivity extends Activity {
                 container.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
-                container.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                container.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
             }else {
                 ovUn = "Over";
                 container.setBackgroundColor(getResources().getColor(R.color.colorListRed));
@@ -663,7 +663,7 @@ public class MainActivity extends Activity {
         //add hint to end of adapter
         //adapter.add("Test");
         if(unusedCategoryList.size() > 0) {
-            adapter.add(MainActivity.this.getResources().getString(R.string.spinnerAddCategoryHint));
+            adapter.add(MainActivity.this.getResources().getString(R.string.spinner_add_category_hint));
         }else {
 
             //display no categories if there are none

@@ -64,7 +64,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textStyle="bold"
-                                android:text="@string/projectedExpenses"
+                                android:text="@string/projected_expenses"
                                 android:textColor="@color/colorLightText"/>
                             <TextView
                                 android:id="@+id/projectedValue"
@@ -81,7 +81,7 @@
                                 android:id="@+id/spent"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/totalSpent"
+                                android:text="@string/total_spent"
                                 android:textStyle="bold"
                                 android:textColor="@color/colorLightText"/>
                             <TextView
@@ -211,7 +211,7 @@
         app:borderWidth="0dp"
         android:src="@drawable/add_icon_white1"
         app:rippleColor="@color/colorCirclePressed"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/colorListNeutral"
         android:layout_gravity="bottom|end"
         android:clickable="true" />
 

@@ -1,26 +1,39 @@
 package com.gregrussell.budget;
 
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.SQLException;
+import android.graphics.BitmapFactory;
 import android.graphics.LightingColorFilter;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.ActionMode;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.Spinner;
@@ -62,6 +75,10 @@ public class CurrentBudgetFragment extends Fragment {
     public static View headerLoadingPanel;
     public static AlertDialog.Builder createBudgetBuilder;
     public static AlertDialog createBudgetDialog;
+    int longClickPos;
+    ListDataObj listData;
+    int longClickedBudget;
+    boolean renameApplyToAllBudgets;
 
     @Override
     public void onResume(){
@@ -69,7 +86,7 @@ public class CurrentBudgetFragment extends Fragment {
         super.onResume();
         Log.d("currentbudget onresume", "on resume " + SwipeViews.swipePosition);
         if(SwipeViews.swipePosition == 1) {
-            SwipeViews.fragTitle.setText(getResources().getText(R.string.allBudgets));
+            SwipeViews.fragTitle.setText(getResources().getText(R.string.all_budgets));
         }
         listLoadingPanel = rootView.findViewById(R.id.listLoadingPanel);
         headerLoadingPanel = rootView.findViewById(R.id.headerLoadingPanel);
@@ -83,12 +100,16 @@ public class CurrentBudgetFragment extends Fragment {
 
 
 
+
+
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         context = getActivity();
 
         rootView = (ViewGroup)inflater.inflate(R.layout.activity_main, container, false);
+
+
 
 
 
@@ -107,11 +128,11 @@ public class CurrentBudgetFragment extends Fragment {
 
         //setting color for header progress bar
         ProgressBar headerProgress = (ProgressBar) rootView.findViewById(R.id.headerProgress);
-        headerProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorPrimary)));
+        headerProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorListNeutral)));
 
         //setting color for list progress bar
         ProgressBar listProgress = (ProgressBar) rootView.findViewById(R.id.listProgress);
-        listProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorPrimary)));
+        listProgress.getIndeterminateDrawable().setColorFilter(new LightingColorFilter(0xFF000000, getResources().getColor(R.color.colorListNeutral)));
 
         //starting each task on a background thread
         /*AsyncLoadBudget loadBudget = new AsyncLoadBudget();
@@ -283,25 +304,75 @@ public class CurrentBudgetFragment extends Fragment {
 
             if(roundTotSpent < roundAllExp){
                 ovUn = "Under";
-                containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
-                topBarColor = getResources().getColor(R.color.colorListGreen);
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListGreen);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                    SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+                    if(Build.VERSION.SDK_INT >= 21){
+                        Window window = ((Activity)context).getWindow();
+
+                        // clear FLAG_TRANSLUCENT_STATUS flag:
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                        // finally change the color
+                        window.setStatusBarColor(ContextCompat.getColor(context,R.color.colorListGreenDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(),R.mipmap.budget_logo), getResources().getColor(R.color.colorListGreen));
+                        ((Activity)context).setTaskDescription(taskDescription);
+                    }
                 }
-                else SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
-                containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                topBarColor = getResources().getColor(R.color.colorPrimary);
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListNeutral);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                    SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+                    if(Build.VERSION.SDK_INT >= 21){
+                        Window window = ((Activity)context).getWindow();
+
+                        // clear FLAG_TRANSLUCENT_STATUS flag:
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                        // finally change the color
+                        window.setStatusBarColor(ContextCompat.getColor(context,R.color.colorPrimaryDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(),R.mipmap.budget_logo), getResources().getColor(R.color.colorPrimary));
+                        ((Activity)context).setTaskDescription(taskDescription);
+                    }
                 }
             }else {
                 ovUn = "Over";
-                containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
-                topBarColor = getResources().getColor(R.color.colorListRed);
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListRed);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                    SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+                    Log.d("changeColor", "change");
+                    if(Build.VERSION.SDK_INT >= 21){
+
+                        Log.d("changeColor", "change");
+                        Window window = ((Activity)context).getWindow();
+
+                        // clear FLAG_TRANSLUCENT_STATUS flag:
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                        // finally change the color
+                        window.setStatusBarColor(ContextCompat.getColor(context,R.color.colorListRedDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(),R.mipmap.budget_logo), getResources().getColor(R.color.colorListRed));
+                        ((Activity)context).setTaskDescription(taskDescription);
+                    }
                 }
             }
 
@@ -312,7 +383,7 @@ public class CurrentBudgetFragment extends Fragment {
             if(SwipeViews.swipePosition == 0) {
                 SwipeViews.fragTitle.setText(budgetName);
             }
-            else SwipeViews.fragTitle.setText(getResources().getText(R.string.allBudgets));
+            else SwipeViews.fragTitle.setText(getResources().getText(R.string.all_budgets));
             budgetNameText.setVisibility(View.GONE);
             //budgetNameText.setText(budgetName);
             projectedExpenses.setText(result[0]);
@@ -333,7 +404,7 @@ public class CurrentBudgetFragment extends Fragment {
         private String[] populateHeader(){
 
             Log.d("listDataObj", "Entered PopulateHeader, current budget is " + currentBudget);
-            ListDataObj listData = myDBHelper.createListData(currentBudget);
+            listData = myDBHelper.createListData(currentBudget);
 
 
             //Debug logs to check that all data is in the list
@@ -419,7 +490,7 @@ public class CurrentBudgetFragment extends Fragment {
 
 
 
-        ListDataObj listData;
+
 
         @Override
         protected void onPreExecute(){
@@ -436,6 +507,8 @@ public class CurrentBudgetFragment extends Fragment {
             PopulateList();
             return null;
         }
+
+
 
 
 
@@ -477,10 +550,22 @@ public class CurrentBudgetFragment extends Fragment {
             });
 
 
+            registerForContextMenu(listView);
+            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
+                    if(position == 0) {
+                        return true;
+                    }else {
+                        longClickPos = position;
+                        return false;
+                    }
 
+                }
+
+            });
         }
-
         private void PopulateList(){
 
             Log.d("listViewAdapter", "PopulateList method is running yay");
@@ -525,7 +610,7 @@ public class CurrentBudgetFragment extends Fragment {
 
         //set up dialog
         alertDialogBuilder
-                .setCancelable(false)
+                .setCancelable(true)
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -703,7 +788,7 @@ public class CurrentBudgetFragment extends Fragment {
         //add hint to end of adapter
         //adapter.add("Test");
         if(unusedCategoryList.size() > 0) {
-            spinnerAdapter.add(this.getResources().getString(R.string.spinnerAddCategoryHint));
+            spinnerAdapter.add(this.getResources().getString(R.string.spinner_add_category_hint));
         }else {
 
             //display no categories if there are none
@@ -807,7 +892,244 @@ public class CurrentBudgetFragment extends Fragment {
     }
 
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.category_long_click_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.clcm_rename:
+                Log.d("longClickMenuClick", "cbf rename position " + longClickPos);
+
+                //method to rename category
+
+                renameCategoryDialog();
+
+                return true;
+            case R.id.clcm_delete:
+                Log.d("longClickMenuClick", "cbf delete position " + longClickPos);
+
+                //method to delte category
+
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+    private void renameCategoryDialog(){
+
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View renameCategoryLayout = inflater.inflate(R.layout.rename_category_dialog,null);
+        final EditText renameCategoryEdit = (EditText)renameCategoryLayout.findViewById(R.id.editTextRenameCategoryDialog);
+        final CheckBox renameCategoryCheckBox = (CheckBox)renameCategoryLayout.findViewById(R.id.checkboxRenameCategoryDialog);
+
+        //create a dialog box to add new category
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+        //set the layout the dialog uses
+        alertDialogBuilder.setView(renameCategoryLayout);
+
+        //set up dialog
+        alertDialogBuilder
+                .setCancelable(true)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                if (String.valueOf(renameCategoryEdit.getText()).trim().isEmpty()) {
+                                    new AlertDialog.Builder(context)
+                                            .setTitle("Invalid Budget Name")
+                                            .setMessage("Must enter a name for the Category.")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    renameCategoryDialog();
+                                                }
+                                            })
+                                            .show();
+                                }else{
+                                    AsyncCheckCategory checkCategoryTask = new AsyncCheckCategory();
+
+                                    //get category that was long clicked
+                                    longClickedBudget = listData.getCategoryIDList().get(longClickPos);
+
+                                    CategoryObj category = new CategoryObj();
+
+                                    category.setCategoryName(String.valueOf(renameCategoryEdit.getText()).trim());
+                                    category.setDefaultCategory(0);
+
+                                    checkCategoryTask.execute(category);
+                                }
+                            }
 
 
+
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        alertDialog.show();
+
+    }
+
+    private class AsyncCheckCategory extends AsyncTask<CategoryObj,Void,Integer>{
+
+
+        String categoryName;
+        CategoryObj categoryObj = new CategoryObj();
+
+        @Override
+        protected Integer doInBackground(CategoryObj... category){
+
+            categoryObj = category[0];
+            categoryName = categoryObj.getCategoryName();
+
+            if(myDBHelper.checkGetUnusedCategory(currentBudget,categoryObj)){
+
+                Log.d("renameCategory", "The category exists but not in this budget");
+                return 0;
+            }else{
+                if(myDBHelper.checkCategoryName(categoryObj)) {
+                    Log.d("renameCategory", "The category Name is unique");
+                    return 1;
+                }else{
+                    Log.d("renameCategory", "tried to rename to category already used in the budget");
+                    return 2;
+                }
+            }
+            /*if(myDBHelper.checkCategoryName(categoryObj)){
+
+                //proceed
+
+                if(renameApplyToAllBudgets == false){
+
+                    //does not apply to all, therefore create a new category
+                    CategoryObj newCategoryObj = myDBHelper.addCategory(categoryObj);
+
+                    //add new category, get id
+                    //replace old category id with new category id in expenses and spending table
+                    myDBHelper.renameCategoryForSingleBudget(longClickedBudget,currentBudget,newCategoryObj);
+
+
+                }else{
+                    //edit category using id
+                    myDBHelper.renameCategoryForAllBudgets(categoryObj);
+                }
+                return true;
+            }else{
+                return false;
+            }*/
+        }
+        @Override
+        protected void onPostExecute(Integer result){
+
+            if(result == 0){
+                Log.d("renameCategory", "The category exists but not in this budget");
+                new AlertDialog.Builder(context)
+                        .setTitle("Use Existing Category")
+                        .setMessage("The category name entered already exists. Use existing category?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                AsyncRenameCategory task = new AsyncRenameCategory();
+                                task.execute(renameToExistingCategory(categoryName));
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                renameCategoryDialog();
+                            }
+                        })
+                        .show();
+
+            }else if(result == 1){
+                Log.d("renameCategory", "The category Name is unique");
+                AsyncRenameCategory task = new AsyncRenameCategory();
+                task.execute(categoryObj);
+            }
+            else if (result == 2){
+                Log.d("renameCategory", "tried to rename to category already used in the budget");
+                new AlertDialog.Builder(context)
+                        .setTitle("Invalid Category Name")
+                        .setMessage("The category name is already used.")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                renameCategoryDialog();
+                            }
+                        })
+                        .show();
+            }
+
+            /*if(!result){
+                new AlertDialog.Builder(context)
+                        .setTitle("Invalid Category Name")
+                        .setMessage("The category name entered already exists. Use existing category?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                AsyncRenameCategoryToExisting task = new AsyncRenameCategoryToExisting();
+                                task.execute(renameToExistingCategory(categoryName));
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                renameCategoryDialog();
+                            }
+                        })
+                        .show();
+            }else {
+                AsyncLoadList loadList = new AsyncLoadList();
+                loadList.execute();
+            }*/
+
+
+        }
+
+    }
+
+    private CategoryObj renameToExistingCategory(String categoryName){
+
+
+        Log.d("renameCategory", String.valueOf(categoryName));
+        return  myDBHelper.getCategoryFromName(categoryName);
+
+    }
+
+    private class AsyncRenameCategory extends AsyncTask<CategoryObj,Void,Boolean> {
+
+
+        @Override
+        protected Boolean doInBackground(CategoryObj... category) {
+
+            CategoryObj categoryObj = category[0];
+            //replace old category id with new category id in expenses and spending table
+            Log.d("renameCategory", "Category id " + categoryObj.getID() + " name " + categoryObj.getCategoryName() + " def " + categoryObj.getDefaultCategory());
+            myDBHelper.renameCategoryForSingleBudget(longClickedBudget, currentBudget, categoryObj);
+            return true;
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result){
+
+            AsyncLoadList loadList = new AsyncLoadList();
+            loadList.execute();
+        }
+    }
 
 }

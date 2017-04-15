@@ -1,16 +1,20 @@
 package com.gregrussell.budget;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.SQLException;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -22,6 +26,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -51,12 +57,14 @@ public class SwipeViews extends Activity {
     public static int swipePosition;
     DataBaseHelperCategory myDBHelper;
     ViewGroup swipeViewsLayoutContainer;
+    int longClickPos;
 
 
     @Override
     protected void onPause(){
 
         super.onPause();
+
 
 
     }
@@ -68,7 +76,7 @@ public class SwipeViews extends Activity {
 
         setContentView(R.layout.swipe_views_layout);
 
-        CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorPrimary);
+        CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListNeutral);
         swipePosition = 0;
         swipeViewsLayoutContainer = (ViewGroup)findViewById(R.id.swipeContainer);
 
@@ -259,12 +267,12 @@ public class SwipeViews extends Activity {
                                             })
                                             .show();
                                 }else{
-                                    AsyncEditBudget addBudget = new AsyncEditBudget();
+                                    AsyncEditBudget editBudgetTask = new AsyncEditBudget();
                                     Calendar c = Calendar.getInstance();
                                     Timestamp time = new Timestamp(c.getTime().getTime());
                                     BudgetObj budget = new BudgetObj(CurrentBudgetFragment.currentBudget,
                                             time, String.valueOf(renameBudgetEdit.getText()).trim());
-                                    addBudget.execute(budget);
+                                    editBudgetTask.execute(budget);
                                 }
                             }
 
@@ -486,21 +494,77 @@ public class SwipeViews extends Activity {
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
                 CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListGreen);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListGreen));
+                    SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+                    //change color of status bar and overview header
+                    if(Build.VERSION.SDK_INT >= 21){
+                        Window window = SwipeViews.this.getWindow();
+
+                        // clear FLAG_TRANSLUCENT_STATUS flag:
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                        // finally change the color
+                        window.setStatusBarColor(ContextCompat.getColor(SwipeViews.this,R.color.colorListGreenDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(),R.mipmap.budget_logo), getResources().getColor(R.color.colorListGreen));
+                        (SwipeViews.this).setTaskDescription(taskDescription);
+                    }
                 }
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
-                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorPrimary);
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListNeutral);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                    SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+
+                    //change color of status bar and overview header
+                    if(Build.VERSION.SDK_INT >= 21){
+                        Window window = SwipeViews.this.getWindow();
+
+                        // clear FLAG_TRANSLUCENT_STATUS flag:
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                        // finally change the color
+                        window.setStatusBarColor(ContextCompat.getColor(SwipeViews.this,R.color.colorPrimaryDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(),R.mipmap.budget_logo), getResources().getColor(R.color.colorPrimary));
+                        (SwipeViews.this).setTaskDescription(taskDescription);
+                    }
                 }
             }else {
                 ovUn = "Over";
                 CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListRed));
                 CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListRed);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListRed));
+                    SwipeViews.topBar.setBackgroundColor(CurrentBudgetFragment.topBarColor);
+                    Log.d("changeColor", "change");
+
+                    //change color of status bar and overview header
+                    if(Build.VERSION.SDK_INT >= 21){
+
+                        Log.d("changeColor", "change");
+                        Window window = SwipeViews.this.getWindow();
+
+                        // clear FLAG_TRANSLUCENT_STATUS flag:
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                        // finally change the color
+                        window.setStatusBarColor(ContextCompat.getColor(SwipeViews.this,R.color.colorListRedDark));
+                        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(
+                                getResources().getString(R.string.app_name), BitmapFactory.decodeResource(
+                                getResources(),R.mipmap.budget_logo),getResources().getColor( R.color.colorListRed));
+                        (SwipeViews.this).setTaskDescription(taskDescription);
+                    }
                 }
             }
 
@@ -510,7 +574,7 @@ public class SwipeViews extends Activity {
             if(swipePosition == 0) {
                 fragTitle.setText(CurrentBudgetFragment.budgetName);
             }else{
-                fragTitle.setText(getResources().getText(R.string.allBudgets));
+                fragTitle.setText(getResources().getText(R.string.all_budgets));
             }
             CurrentBudgetFragment.projectedExpenses.setText(result[0]);
             CurrentBudgetFragment.spent.setText(result[1]);
@@ -692,6 +756,8 @@ public class SwipeViews extends Activity {
 
 
 
+
+
         }
 
         private void PopulateList(){
@@ -709,6 +775,8 @@ public class SwipeViews extends Activity {
 
         }
     }
+
+
 
     private class AsyncLoadBudget extends AsyncTask<Void,Void, Boolean> {
 

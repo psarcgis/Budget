@@ -13,7 +13,10 @@ import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -42,6 +45,7 @@ public class BudgetListFragment extends Fragment{
     public static ListViewAdapterAllBudgets adapter;
     public static ListView budgetListView;
     public static List<BudgetListItemObj> budgetListItemList = new ArrayList<BudgetListItemObj>();
+    int longClickPos;
 
     @Override
     public void onResume(){
@@ -49,7 +53,7 @@ public class BudgetListFragment extends Fragment{
 
         Log.d("BudgetListFragment", "on resume " + SwipeViews.swipePosition);
         if(SwipeViews.swipePosition == 1) {
-            SwipeViews.fragTitle.setText(getResources().getText(R.string.allBudgets));
+            SwipeViews.fragTitle.setText(getResources().getText(R.string.all_budgets));
         }
         AsyncLoadList loadListTask = new AsyncLoadList();
         loadListTask.execute();
@@ -134,6 +138,17 @@ public class BudgetListFragment extends Fragment{
                     loadCurrentBudgetList.execute();
                 }
             });
+            registerForContextMenu(budgetListView);
+            budgetListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                    longClickPos = position;
+                    return false;
+
+                }
+
+            });
         }
 
         private void PopulateList(){
@@ -216,10 +231,10 @@ public class BudgetListFragment extends Fragment{
                 }
             }else if(roundTotSpent == roundAllExp){
                 ovUn = "Even";
-                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorPrimary);
+                CurrentBudgetFragment.containerLayout.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
+                CurrentBudgetFragment.topBarColor = getResources().getColor(R.color.colorListNeutral);
                 if(SwipeViews.swipePosition == 0) {
-                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                    SwipeViews.topBar.setBackgroundColor(getResources().getColor(R.color.colorListNeutral));
                 }
             }else {
                 ovUn = "Over";
@@ -414,7 +429,11 @@ public class BudgetListFragment extends Fragment{
 
 
 
+
+
         }
+
+
 
         private void PopulateList(){
 
@@ -440,6 +459,394 @@ public class BudgetListFragment extends Fragment{
         startActivity(intent);
 
     }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.budget_long_click_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.blcm_rename:
+                Log.d("longClickMenuClick", "blf rename position " + longClickPos);
+                renameBudgetDialog();
+                return true;
+            case R.id.blcm_delete:
+                Log.d("longClickMenuClick", "blf delete position " + longClickPos);
+                deleteBudgetDialog();
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+
+
+    private void deleteBudgetDialog(){
+
+        new AlertDialog.Builder(context)
+                .setTitle("Delete Budget")
+                .setMessage("Are you sure you want to permanently delete this budget?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        AsyncDeleteBudget deleteBudgetTask = new AsyncDeleteBudget();
+                        deleteBudgetTask.execute(new BudgetObj());
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+
+                    }
+
+                })
+                .show();
+    }
+
+    private void renameBudgetDialog(){
+
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View renameBudgetLayout = inflater.inflate(R.layout.rename_budget_dialog,null);
+        final EditText renameBudgetEdit = (EditText)renameBudgetLayout.findViewById(R.id.editTextRenameBudget);
+
+        //create a dialog box to add new category
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+        //set the layout the dialog uses
+        alertDialogBuilder.setView(renameBudgetLayout);
+
+        //set up dialog
+        alertDialogBuilder
+                .setCancelable(true)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                if (String.valueOf(renameBudgetEdit.getText()).trim().isEmpty()) {
+                                    new AlertDialog.Builder(context)
+                                            .setTitle("Invalid Budget Name")
+                                            .setMessage("Must enter a name for the Budget.")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    renameBudgetDialog();
+                                                }
+                                            })
+                                            .show();
+                                }else{
+                                    AsyncEditBudget editBudgetTask = new AsyncEditBudget();
+                                    Calendar c = Calendar.getInstance();
+                                    Timestamp time = new Timestamp(c.getTime().getTime());
+
+                                    //get budget that was long clicked
+                                    int longClickedBudget = budgetListItemList.get(longClickPos).getBudgetID();
+                                    BudgetObj budget = new BudgetObj(longClickedBudget,
+                                            time, String.valueOf(renameBudgetEdit.getText()).trim());
+                                    editBudgetTask.execute(budget);
+                                }
+                            }
+
+
+
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        alertDialog.show();
+    }
+
+    //background task to delete a budget
+    private class AsyncDeleteBudget extends AsyncTask<BudgetObj,Void,Boolean> {
+
+        @Override
+        protected Boolean doInBackground(BudgetObj... params) {
+
+            //get budget that was long clicked
+            int longClickedBudget = budgetListItemList.get(longClickPos).getBudgetID();
+
+            deleteBudget(longClickedBudget);
+            BudgetListFragment.budgetListItemList = getBudgetList();
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean deleted){
+
+
+            Log.d("deleteBudget", String.valueOf(deleted));
+            //the next newest budget
+            AsyncLoadBudget loadBudget = new AsyncLoadBudget();
+            loadBudget.execute();
+
+            //setting up the adapter for allBudgets listView
+            BudgetListFragment.adapter = new ListViewAdapterAllBudgets(context,BudgetListFragment.budgetListItemList);
+            BudgetListFragment.adapter.notifyDataSetChanged();
+
+            //setting the adapater onto the listView
+            BudgetListFragment.budgetListView.setAdapter(null);
+            BudgetListFragment.budgetListView.setAdapter(BudgetListFragment.adapter);
+
+            //background tasks to display the current budget
+            AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
+            loadHeader.execute();
+            AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
+            loadList.execute();
+
+        }
+    }
+
+
+
+    //method called to delete the budget
+    private void deleteBudget(int budget){
+
+        myDBHelper = new DataBaseHelperCategory(context);
+
+        try {
+            myDBHelper.createDataBase();
+        } catch (IOException ioe) {
+            throw new Error("Unable to create database");
+
+        }
+
+        try {
+
+            myDBHelper.openDataBase();
+
+        } catch (SQLException sqle) {
+
+            throw sqle;
+
+        }
+
+        myDBHelper.deleteBudget(budget);
+
+    }
+
+
+    //background task to delete a budget
+    private class AsyncEditBudget extends AsyncTask<BudgetObj,Void,Boolean> {
+
+        @Override
+        protected Boolean doInBackground(BudgetObj... params) {
+
+            if(editBudget(params[0])){
+                BudgetListFragment.budgetListItemList = getBudgetList();
+                return true;
+            }else{
+                return false;
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean renamed){
+
+
+            Log.d("editBudget", String.valueOf(renamed));
+
+            //call the dialog again if couldn't rename
+            if(!renamed){
+                new AlertDialog.Builder(context)
+                        .setTitle("Invalid Budget Name")
+                        .setMessage("The budget name entered already exists. Please enter a unique name.")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                renameBudgetDialog();
+                            }
+                        })
+                        .show();
+            }else {
+
+                //the next newest budget
+                AsyncLoadBudget loadBudget = new AsyncLoadBudget();
+                loadBudget.execute();
+
+                //setting up the adapter for allBudgets listView
+                BudgetListFragment.adapter = new ListViewAdapterAllBudgets(context, BudgetListFragment.budgetListItemList);
+                BudgetListFragment.adapter.notifyDataSetChanged();
+
+                //setting the adapater onto the listView
+                BudgetListFragment.budgetListView.setAdapter(null);
+                BudgetListFragment.budgetListView.setAdapter(BudgetListFragment.adapter);
+
+                //background tasks to display the current budget
+                AsyncCurrentBudgetLoadHeader loadHeader = new AsyncCurrentBudgetLoadHeader();
+                loadHeader.execute();
+                AsyncCurrentBudgetLoadList loadList = new AsyncCurrentBudgetLoadList();
+                loadList.execute();
+            }
+
+        }
+    }
+
+
+
+    //method called to delete the budget
+    private boolean editBudget(BudgetObj budgetObj){
+
+        myDBHelper = new DataBaseHelperCategory(context);
+
+        try {
+            myDBHelper.createDataBase();
+        } catch (IOException ioe) {
+            throw new Error("Unable to create database");
+
+        }
+
+        try {
+
+            myDBHelper.openDataBase();
+
+        } catch (SQLException sqle) {
+
+            throw sqle;
+
+        }
+
+        if(myDBHelper.checkBudgetName(budgetObj.getBudgetName())){
+            myDBHelper.updateBudgetName(budgetObj);
+            return true;
+        }
+        else{
+            return false;
+        }
+
+
+    }
+
+    //method to update list of all budgets used to populate BudgetListFragment
+    private List<BudgetListItemObj> getBudgetList(){
+
+        return myDBHelper.getAllBudgetsList();
+
+    }
+
+    private class AsyncLoadBudget extends AsyncTask<Void,Void, Boolean> {
+
+
+
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            return  LoadBudget();
+            //because you have to return something to onPostExecute
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result){
+
+            if(!result){
+                CurrentBudgetFragment.listLoadingPanel.setVisibility(View.VISIBLE);
+                CurrentBudgetFragment.headerLoadingPanel.setVisibility(View.VISIBLE);
+                createBudget();
+            }
+
+        }
+
+
+        private boolean LoadBudget(){
+
+            Log.d("LoadBudget swipeViews", "made it to load budget");
+            //compare most recent spending timestamp and earning timestamp to find most recent budget
+            // to load
+
+            int recentBudget;
+
+            myDBHelper = new DataBaseHelperCategory(context);
+
+            try {
+                myDBHelper.createDataBase();
+            } catch (IOException ioe) {
+                throw new Error("Unable to create database");
+
+            }
+
+            try {
+
+                myDBHelper.openDataBase();
+
+            } catch (SQLException sqle) {
+
+                throw sqle;
+
+            }
+
+
+            //myDBHelper.checkCategoryName(categoryObj);
+
+            //myDBHelper.addCategory("Dating", false);
+
+
+
+
+            recentBudget = myDBHelper.getMostRecentBudget();
+
+            if(recentBudget == -1){
+                return false;
+                //createBudget();
+            }else {
+                CurrentBudgetFragment.currentBudget = recentBudget;
+                Calendar c = Calendar.getInstance();
+                Timestamp time = new Timestamp(c.getTime().getTime());
+                myDBHelper.updateBudgetTimestamp(CurrentBudgetFragment.currentBudget,time);
+                Log.d("loadBudgetSwipeViews", "recent budget is " + CurrentBudgetFragment.currentBudget);
+                CurrentBudgetFragment.unusedCategoryList.clear();
+                CurrentBudgetFragment.unusedCategoryList = myDBHelper.getUnusedCategories(CurrentBudgetFragment.currentBudget);
+                for(int i =0; i < CurrentBudgetFragment.unusedCategoryList.size(); i++){
+                    Log.d("allCategoriesNotUsed CB", CurrentBudgetFragment.unusedCategoryList.get(i).getCategoryName());
+                }
+                return true;
+
+
+            }
+
+
+
+
+
+        }
+
+        private void createBudget(){
+
+            Log.d("createBudget", "Entered Create Budget SwipeViews");
+            new AlertDialog.Builder(context)
+                    .setCancelable(false)
+                    .setTitle("No Budgets Found")
+                    .setMessage("Create a budget to continue")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            Intent intent = new Intent(context,AddBudget.class);
+                            startActivity(intent);
+                        }
+                    })
+
+                    .show();
+            //myDBHelper.addBudget("March 2017");
+            //LoadBudget();
+        }
+
+
+
+    }
+
+
 
 
 }

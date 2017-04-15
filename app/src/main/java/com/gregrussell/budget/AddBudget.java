@@ -343,7 +343,7 @@ public class AddBudget extends Activity {
         //add hint to end of adapter
         //adapter.add("Test");
         if (unusedCategoriesList.size() > 0) {
-            spinnerAdapter.add(this.getResources().getString(R.string.spinnerAddCategoryHint));
+            spinnerAdapter.add(this.getResources().getString(R.string.spinner_add_category_hint));
         } else {
 
             //display no categories if there are none
